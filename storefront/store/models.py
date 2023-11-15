@@ -9,6 +9,9 @@ class Promotion(models.Model):
 
 class Collection(models.Model):
     name = models.CharField(max_length=255)
+    featured_product = models.ForeignKey(
+        "Product", null=True, on_delete=models.SET_NULL, related_name="+"
+    )  # circular relationship. '+' -> do not create reverse relationship
 
 
 class Product(models.Model):
@@ -58,7 +61,7 @@ class Order(models.Model):
 
     placed_at = models.DateTimeField(auto_now_add=True)
     payment_status = models.CharField(
-        choices=PAYMENT_STATUS_CHOICES, default=PAYMENT_STATUS_PENDING
+        max_length=1, choices=PAYMENT_STATUS_CHOICES, default=PAYMENT_STATUS_PENDING
     )
     customer = models.ForeignKey(
         Customer, on_delete=models.PROTECT
