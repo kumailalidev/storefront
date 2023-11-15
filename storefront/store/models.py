@@ -1,6 +1,10 @@
 from django.db import models
 
 
+class Collection(models.Model):
+    name = models.CharField(max_length=255)
+
+
 class Product(models.Model):
     # sku = models.CharField(max_length=10, primary_key=True)
     title = models.CharField(max_length=255)  # varchar 255
@@ -8,6 +12,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=6, decimal_places=2)  # 9999.99
     inventory = models.IntegerField()
     last_update = models.DateTimeField(auto_now=True)
+    collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
 
 
 class Customer(models.Model):
@@ -48,11 +53,29 @@ class Order(models.Model):
     payment_status = models.CharField(
         choices=PAYMENT_STATUS_CHOICES, default=PAYMENT_STATUS_PENDING
     )
+    customer = models.ForeignKey(
+        Customer, on_delete=models.PROTECT
+    )  # orders should never be deleted
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.PROTECT)
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    quantity = models.PositiveSmallIntegerField()
+    unit_price = models.DecimalField(max_digits=6, decimal_places=2)
+
+
+class Cart(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveSmallIntegerField()
 
 
 class Address(models.Model):
-    customer = models.OneToOneField(
-        Customer, on_delete=models.CASCADE, primary_key=True
-    )  # parent field and a primary key to ensure only on address
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)  # parent field
     street = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
