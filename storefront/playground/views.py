@@ -52,9 +52,34 @@ def say_hello(request):
     # )  # Products: inventory=price
 
     # we can also reference field in a related table
-    queryset = Product.objects.filter(
-        inventory=F("collection__id")
-    )  # Products: inventory=price
+    # queryset = Product.objects.filter(
+    #     inventory=F("collection__id")
+    # )  # Products: inventory=price
+
+    # P01-05-09-Sorting
+
+    # queryset = Product.objects.order_by("title")  # ascending order
+    # queryset = Product.objects.order_by("-title")  # descending order
+    # queryset = Product.objects.order_by(
+    #     "unit_price", "-title"
+    # )  # sort products by unit price in ASC order then by title in DESC order.
+
+    # reversing the order of filtering
+    # queryset = Product.objects.order_by("unit_price", "-title").reverse()
+
+    # queryset = Product.objects.filter(collection__id=1).order_by("unit_price")
+
+    # NOTE: Change context variable and hello.html template
+    # queryset = Product.objects.order_by("unit_price")[
+    #     0
+    # ] # returns object instead of QuerySet because of slicing operator query will executed.
+
+    # queryset = Product.objects.earliest(
+    #     "unit_price"
+    # )  # Sorts the product list in ASC order and returns first object
+    # queryset = Product.objects.latest(
+    #     "unit_price"
+    # )  # Sort the product list in DESC order and returns first object
 
     return render(
         request,
