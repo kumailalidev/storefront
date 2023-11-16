@@ -6,9 +6,23 @@
             <h1>Hello World</h1>
         {% endif %}
         <ul>
-            {% for product in products %}
-                <li>{{ product.title }}</li>
+            <!-- {% for product in products %}
+                <li>{{ product.title }} - {{ product.collection.title }}</li>
+            {% endfor %} -->
+
+            <!-- P01-05-13-Selecting Related Objects -->
+            <!-- Exercise -->
+
+            <!-- Solution 01 -->
+            <!-- {% for order_item in order_items %}
+                <li>{{ order_item.id }} - {{ order_item.order.customer.first_name }} - {{ order_item.order.placed_at }}</li>
+            {% endfor %} -->
+
+            <!-- Solution 02 -->
+            {% for order in orders %}
+                <li>{{ order.id }} - {{ order.customer.first_name }}</li>
             {% endfor %}
+            
         </ul>
     </body>
 </html>

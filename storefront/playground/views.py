@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, F
 
-from store.models import OrderItem, Product
+from store.models import Order, OrderItem, Product
 
 
 def say_hello(request):
@@ -121,13 +121,60 @@ def say_hello(request):
     # )  # NOTE: can result extra unnecessary queries if unspecified column value is rendered in template. value and value_list dont have this issue.
 
     # defer() offloads loading of specified field later.
-    queryset = Product.objects.defer("description")
+    # queryset = Product.objects.defer("description")
+
+    # P01-05-13-Selecting related objects.
+
+    # NOTE: NOT RECOMMENDED When rendering related fields values (such as collection) inside
+    # a template
+    # queryset = Product.objects.all()
+
+    # SOLUTION: use select_related() -> performs INNER JOIN
+    # queryset = Product.objects.select_related("collection").all()
+
+    # can also select specific field of related table
+    # queryset = Product.objects.select_related("collection__someOtherField").all()
+
+    # select_related: used when other end of the relationship has only 1 instance
+    #   e.g. product has only one collection
+    #   ForeignKey relationships
+    # prefetch_related: used when other end of the relationship has many (n) instances
+    #   e.g. promotions of the product
+    #   ManyToMany relationships
+
+    # queryset = Product.objects.prefetch_related("promotions").all()
+
+    # chaining both
+    # queryset = (
+    #     Product.objects.prefetch_related("promotions")
+    #     .select_related("collection")
+    #     .all()
+    # )
+
+    # EXERCISE:
+    # Get the last 5 orders with their customer and items (incl product)
+
+    # SOLUTION # 1 (3 Queries)
+    queryset = (
+        Order.objects.select_related("customer")
+        .prefetch_related("orderitem_set__product")
+        .order_by("-placed_at")[:5]
+    )
+
+    # SOLUTION # 2 (2 queries)
+    # # NOTE: change context variable name to 'order_items'.
+    # queryset = (
+    #     OrderItem.objects.select_related("order")
+    #     .prefetch_related("order__customer")
+    #     .select_related("product")
+    #     .order_by("-order__placed_at")[:5]
+    # )
 
     return render(
         request,
         "hello.html",
         {
             "name": "Kumail",
-            "products": list(queryset),
+            "orders": list(queryset),
         },
     )
