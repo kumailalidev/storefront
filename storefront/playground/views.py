@@ -1,6 +1,7 @@
+from django.db.models import DecimalField
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q, F, Value, Func
+from django.db.models import Q, F, Value, Func, ExpressionWrapper
 from django.db.models.functions import Concat
 from django.db.models.aggregates import Count, Min, Max, Avg, Sum
 
@@ -220,9 +221,17 @@ def say_hello(request):
     # P01-05-17-Grouping Data.
 
     # Counting orders placed by customers
-    queryset = Customer.objects.annotate(
-        orders_count=Count("order")
-    )  #  adds new column 'orders_count' to Customer populated by no. of orders each customer made.
+    # queryset = Customer.objects.annotate(
+    #     orders_count=Count("order")
+    # )  #  adds new column 'orders_count' to Customer populated by no. of orders each customer made.
+
+    # P01-05-18-Working with Expression Wrappers.
+
+    # creating ExpressionWrapper object to calculate discounted price
+    discounted_price = ExpressionWrapper(
+        F("unit_price") * 0.8, output_field=DecimalField()
+    )
+    queryset = Product.objects.annotate(discounted_price=discounted_price)
 
     return render(
         request,
