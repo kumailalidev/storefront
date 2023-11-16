@@ -108,9 +108,20 @@ def say_hello(request):
     # Select products that have been ordered and sort them by title
 
     # SOLUTION
-    queryset = Product.objects.filter(
-        id__in=OrderItem.objects.values("product__id").distinct()
-    ).order_by("title")
+    # queryset = Product.objects.filter(
+    #     id__in=OrderItem.objects.values("product__id").distinct()
+    # ).order_by("title")
+
+    # P01-05-12-Deferring fields.
+
+    # only() reads only specified columns, returns objects of model class instead of
+    # dictionaries.
+    # queryset = Product.objects.only(
+    #     "id", "title"
+    # )  # NOTE: can result extra unnecessary queries if unspecified column value is rendered in template. value and value_list dont have this issue.
+
+    # defer() offloads loading of specified field later.
+    queryset = Product.objects.defer("description")
 
     return render(
         request,
