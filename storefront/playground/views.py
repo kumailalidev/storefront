@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, F
+from django.db.models.aggregates import Count, Min, Max, Avg, Sum
 
 from store.models import Order, OrderItem, Product
 
@@ -155,11 +156,11 @@ def say_hello(request):
     # Get the last 5 orders with their customer and items (incl product)
 
     # SOLUTION # 1 (3 Queries)
-    queryset = (
-        Order.objects.select_related("customer")
-        .prefetch_related("orderitem_set__product")
-        .order_by("-placed_at")[:5]
-    )
+    # queryset = (
+    #     Order.objects.select_related("customer")
+    #     .prefetch_related("orderitem_set__product")
+    #     .order_by("-placed_at")[:5]
+    # )
 
     # SOLUTION # 2 (2 queries)
     # # NOTE: change context variable name to 'order_items'.
@@ -170,11 +171,28 @@ def say_hello(request):
     #     .order_by("-order__placed_at")[:5]
     # )
 
+    # P01-05-Aggregating Objects
+
+    # counting objects using aggregation
+    # result = Product.objects.aggregate(Count("id")) # returns dictionary with id__count key.
+    # result = Product.objects.aggregate(
+    #     count=Count("id")
+    # )  # returns dictionary with count key.
+    # result = Product.objects.aggregate(
+    #     count=Count("id"), min_price=Min("unit_price")
+    # )  # returns dictionary with count and min_price key.
+
+    # using filter and aggregate
+    result = Product.objects.filter(collection__id=3).aggregate(
+        count=Count("id"), min_price=Min("unit_price")
+    )  # returns dictionary with count and min_price key.
+
     return render(
         request,
         "hello.html",
         {
             "name": "Kumail",
-            "orders": list(queryset),
+            # "orders": list(queryset),
+            "result": result,
         },
     )
