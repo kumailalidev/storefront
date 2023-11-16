@@ -248,7 +248,24 @@ def say_hello(request):
     # P01-05-20-Custom Managers
 
     # using get_tags_for custom manager method to get all tags for product
-    queryset = TaggedItem.objects.get_tags_for(Product, 1)
+    # queryset = TaggedItem.objects.get_tags_for(Product, 1)
+
+    # P01-05-21-Understanding QuerySet Cache
+
+    # get all the products QuerySet
+    queryset = Product.objects.all()
+
+    # NOTE: the below behavior only happen if the complete queryset is executed first.
+    # Caching depends upon the structure of code.
+
+    # list(queryset)  # Django will execute the queryset and store into cache
+    # list(queryset)  # this time Django will read results from cache
+    # queryset[0]  #  gets object from cache instead of executing queryset again
+
+    queryset[0]  # Django will execute queryset and get the object
+    list(
+        queryset
+    )  # Django will again execute queryset because previously it wasn't executed completely and cached.
 
     return render(
         request,
