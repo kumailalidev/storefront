@@ -288,6 +288,28 @@ def say_hello(request):
     #     title="Video Games", featured_product_id=1
     # )  # featured_product_id is same as featured_product__id; Django by default save ForeignKey field as id
 
+    # P01-05-23-Updating Objects
+
+    # update complete object
+    # collection = Collection(pk=1)
+    # collection.title = "Games"
+    # collection.featured_product = None
+    # collection.save()
+
+    # update only featured_product
+    # collection = Collection(pk=1)
+    # # collection.title = "" # default behavior of Django; collection.title value does not exits in memory
+    # collection.featured_product = None
+    # collection.save()
+
+    # proper way of updating object
+    # collection = Collection.objects.get(pk=1) # get object from the database and store it into memory
+    # collection.featured_product = None
+    # collection.save()
+
+    # directly updating object using update method
+    Collection.objects.filter(pk=1).update(featured_product=None)
+
     return render(
         request,
         "hello.html",
