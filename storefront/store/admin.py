@@ -20,6 +20,19 @@ class InventoryFilter(admin.SimpleListFilter):
 
 @admin.register(models.Product)
 class ProductAdmin(admin.ModelAdmin):
+    # fields = ["title", "slug"]
+    # readonly_fields = ["title"]
+    # exclude = ["promotions"]
+
+    # NOTE: Fields are only prepopulated during creation of objects
+    prepopulated_fields = {
+        "slug": [
+            "title",  # can be multiple field, Django will combine them
+        ]
+    }
+    autocomplete_fields = [
+        "collection"
+    ]  # search_field must be defined in Collection admin class
     actions = ["clear_inventory"]
     list_display = ["title", "unit_price", "inventory_status", "collection_title"]
     list_editable = ["unit_price"]
@@ -78,10 +91,14 @@ class CustomerAdmin(admin.ModelAdmin):
 
 @admin.register(models.Order)
 class OrderAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["customer"]
     list_display = ["id", "placed_at", "customer"]
 
 
 class CollectionAdmin(admin.ModelAdmin):
+    search_fields = [
+        "title"
+    ]  # required to make work autocomplete_fields in ProductAdmin class.
     list_display = ["title", "products_count"]
 
     @admin.display(ordering="products_count")
