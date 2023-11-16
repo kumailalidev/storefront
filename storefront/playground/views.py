@@ -81,6 +81,13 @@ def say_hello(request):
     #     "unit_price"
     # )  # Sort the product list in DESC order and returns first object
 
+    # P01-05-10-Limiting Results
+
+    # queryset = Product.objects.all()[:5]  # limit query to first 5 products
+    queryset = Product.objects.all()[
+        5:10
+    ]  # limit query to 5 products, skip first 5 products
+
     return render(
         request,
         "hello.html",
