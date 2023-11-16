@@ -5,6 +5,7 @@ from django.db.models import Q, F, Value, Func, ExpressionWrapper
 from django.db.models.functions import Concat
 from django.db.models.aggregates import Count, Min, Max, Avg, Sum
 from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
 
 from store.models import Collection, Customer, Order, OrderItem, Product
 from tags.models import TaggedItem
@@ -308,7 +309,36 @@ def say_hello(request):
     # collection.save()
 
     # directly updating object using update method
-    Collection.objects.filter(pk=1).update(featured_product=None)
+    # Collection.objects.filter(pk=1).update(featured_product=None)
+
+    # 🔵 P01-05-24-Deleting Objects.
+
+    # using delete method
+    # collection = Collection(pk=1)
+    # collection.delete()
+
+    # using filter and delete
+    # Collection.objects.filter(id__gt=5).delete()
+
+    # 🔵 P01-05-25-Transactions
+
+    # transaction block
+    # data will be committed to database only if both operations will be successful.
+    with transaction.atomic():
+        # create an order
+        order = Order()
+        order.id = 1001
+        order.customer_id = 1
+        order.save()
+
+        # create order item
+        item = OrderItem()
+        item.id = 10001
+        item.order = order
+        item.product_id = 1
+        item.quantity = 1
+        item.unit_price = 10
+        item.save()
 
     return render(
         request,
@@ -320,3 +350,32 @@ def say_hello(request):
             # "tags": list(queryset),
         },
     )
+
+
+# @transaction.atomic
+# def say_hello(request):
+#     # 🔵 P01-05-25-Transactions
+
+#     # create an order
+#     order = Order()
+#     order.customer_id = 1
+#     order.save()
+
+#     # create order item
+#     item = OrderItem()
+#     item.order = order
+#     item.product_id = 1
+#     item.quantity = 1
+#     item.unit_price = 10
+#     item.save()
+
+#     return render(
+#         request,
+#         "hello.html",
+#         {
+#             "name": "Kumail",
+#             # "orders": list(queryset),
+#             # "result": list(queryset),
+#             # "tags": list(queryset),
+#         },
+#     )
