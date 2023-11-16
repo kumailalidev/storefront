@@ -13,6 +13,13 @@ class Collection(models.Model):
         "Product", null=True, on_delete=models.SET_NULL, related_name="+"
     )  # circular relationship. '+' -> do not create reverse relationship
 
+    # overriding magic __str__ method
+    def __str__(self) -> str:
+        return self.title
+
+    class Meta:
+        ordering = ["title"]
+
 
 class Product(models.Model):
     # sku = models.CharField(max_length=10, primary_key=True)
@@ -24,6 +31,12 @@ class Product(models.Model):
     last_update = models.DateTimeField(auto_now=True)
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
     promotions = models.ManyToManyField(Promotion)
+
+    def __str__(self) -> str:
+        return self.title
+
+    class Meta:
+        ordering = ["title"]
 
 
 class Customer(models.Model):
