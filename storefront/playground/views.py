@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q
+from django.db.models import Q, F
 
 from store.models import Product
 
@@ -40,9 +40,21 @@ def say_hello(request):
     #     Q(inventory__lt=10) | Q(unit_price__lt=20)
     # )  # Products: inventory < 10 OR price < 20
 
+    # queryset = Product.objects.filter(
+    #     Q(inventory__lt=10) | ~Q(unit_price__lt=20)
+    # )  # Products: inventory < 10 OR price is not < 20
+
+    # P01-05-08-Referencing fields using F objects.
+
+    # F objects are used to reference a particular field.
+    # queryset = Product.objects.filter(
+    #     inventory=F("unit_price")
+    # )  # Products: inventory=price
+
+    # we can also reference field in a related table
     queryset = Product.objects.filter(
-        Q(inventory__lt=10) | ~Q(unit_price__lt=20)
-    )  # Products: inventory < 10 OR price is not < 20
+        inventory=F("collection__id")
+    )  # Products: inventory=price
 
     return render(
         request,
