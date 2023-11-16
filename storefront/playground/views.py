@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q, F, Value
+from django.db.models import Q, F, Value, Func
+from django.db.models.functions import Concat
 from django.db.models.aggregates import Count, Min, Max, Avg, Sum
 
 from store.models import Customer, Order, OrderItem, Product
@@ -200,9 +201,21 @@ def say_hello(request):
     #     is_new=Value(True)
     # )  # adds new column 'is_true' to Customer populated by 1 (True)
 
+    # queryset = Customer.objects.annotate(
+    #     new_id=F("id") + 1
+    # )  # adds new column 'new_id' to Customer populated by id value + 1
+
+    # P01-05-16-Calling Database Functions.
+
+    # calling CONCAT function
+    # queryset = Customer.objects.annotate(
+    #     full_name=Func(F("first_name"), Value(" "), F("last_name"), function="CONCAT")
+    # )  # CONCAT function with 3 arguments. Results a new column called 'full_name'
+
+    # using Django builtin method
     queryset = Customer.objects.annotate(
-        new_id=F("id") + 1
-    )  # adds new column 'new_id' to Customer populated by id value + 1
+        full_name=Concat("first_name", Value(" "), "last_name")
+    )
 
     return render(
         request,
