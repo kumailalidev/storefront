@@ -213,9 +213,16 @@ def say_hello(request):
     # )  # CONCAT function with 3 arguments. Results a new column called 'full_name'
 
     # using Django builtin method
+    # queryset = Customer.objects.annotate(
+    #     full_name=Concat("first_name", Value(" "), "last_name")
+    # )
+
+    # P01-05-17-Grouping Data.
+
+    # Counting orders placed by customers
     queryset = Customer.objects.annotate(
-        full_name=Concat("first_name", Value(" "), "last_name")
-    )
+        orders_count=Count("order")
+    )  #  adds new column 'orders_count' to Customer populated by no. of orders each customer made.
 
     return render(
         request,
