@@ -238,12 +238,17 @@ def say_hello(request):
     # P01-05-19-Querying Generic Relationships.
 
     # getting content type object
-    content_type = ContentType.objects.get_for_model(Product)
+    # content_type = ContentType.objects.get_for_model(Product)
 
     # getting tags for Product with id=1
-    queryset = TaggedItem.objects.select_related("tag").filter(
-        content_type=content_type, object_id=1
-    )
+    # queryset = TaggedItem.objects.select_related("tag").filter(
+    #     content_type=content_type, object_id=1
+    # )
+
+    # P01-05-20-Custom Managers
+
+    # using get_tags_for custom manager method to get all tags for product
+    queryset = TaggedItem.objects.get_tags_for(Product, 1)
 
     return render(
         request,
