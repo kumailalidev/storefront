@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q, F
+from django.db.models import Q, F, Value
 from django.db.models.aggregates import Count, Min, Max, Avg, Sum
 
-from store.models import Order, OrderItem, Product
+from store.models import Customer, Order, OrderItem, Product
 
 
 def say_hello(request):
@@ -183,9 +183,26 @@ def say_hello(request):
     # )  # returns dictionary with count and min_price key.
 
     # using filter and aggregate
-    result = Product.objects.filter(collection__id=3).aggregate(
-        count=Count("id"), min_price=Min("unit_price")
-    )  # returns dictionary with count and min_price key.
+    # result = Product.objects.filter(collection__id=3).aggregate(
+    #     count=Count("id"), min_price=Min("unit_price")
+    # )  # returns dictionary with count and min_price key.
+
+    # P01-05-14-Annotating objects.
+
+    # Annotating allows to add new fields to objects when querying them.
+    # NOTE: Only Expression objects are allowed cannot pass boolean values
+    # queryset = Customer.objects.annotate(
+    #     is_new=True
+    # )  # ERROR.
+
+    # passing Expression object; Value
+    # queryset = Customer.objects.annotate(
+    #     is_new=Value(True)
+    # )  # adds new column 'is_true' to Customer populated by 1 (True)
+
+    queryset = Customer.objects.annotate(
+        new_id=F("id") + 1
+    )  # adds new column 'new_id' to Customer populated by id value + 1
 
     return render(
         request,
@@ -193,6 +210,6 @@ def say_hello(request):
         {
             "name": "Kumail",
             # "orders": list(queryset),
-            "result": result,
+            "result": list(queryset),
         },
     )
