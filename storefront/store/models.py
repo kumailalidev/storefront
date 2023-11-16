@@ -14,7 +14,7 @@ class Collection(models.Model):
     )  # circular relationship. '+' -> do not create reverse relationship
 
     # overriding magic __str__ method
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # type annotation syntax
         return self.title
 
     class Meta:
@@ -63,7 +63,10 @@ class Customer(models.Model):
     # order_set (reverse relationship created by Order class, use order when using Count())
 
     def __str__(self) -> str:
-        return self.first_name
+        return f"{self.first_name} {self.last_name}"
+
+    class Meta:
+        ordering = ["first_name", "last_name"]
 
     # defined in admin.py
     # class Meta:
@@ -89,6 +92,9 @@ class Order(models.Model):
         Customer, on_delete=models.PROTECT
     )  # orders should never be deleted
     # orderitem_set
+
+    def __str__(self) -> str:
+        return self.first_name
 
 
 class OrderItem(models.Model):
