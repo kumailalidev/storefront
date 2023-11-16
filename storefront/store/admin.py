@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Count
 
 from . import models
 
@@ -36,4 +37,17 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ["id", "placed_at", "customer"]
 
 
-admin.site.register(models.Collection)
+class CollectionAdmin(admin.ModelAdmin):
+    list_display = ["title", "products_count"]
+
+    @admin.display(ordering="products_count")
+    def products_count(self, collection):
+        return collection.products_count
+
+    # overriding the base QuerySet of Collection class
+    def get_queryset(self, request):
+        # annotating the base queryset before returning; adds product_count field to each collection object.
+        return super().get_queryset(request).annotate(products_count=Count("product"))
+
+
+admin.site.register(models.Collection, CollectionAdmin)
