@@ -6,7 +6,7 @@ from django.db.models.functions import Concat
 from django.db.models.aggregates import Count, Min, Max, Avg, Sum
 from django.contrib.contenttypes.models import ContentType
 
-from store.models import Customer, Order, OrderItem, Product
+from store.models import Collection, Customer, Order, OrderItem, Product
 from tags.models import TaggedItem
 
 
@@ -253,7 +253,7 @@ def say_hello(request):
     # P01-05-21-Understanding QuerySet Cache
 
     # get all the products QuerySet
-    queryset = Product.objects.all()
+    # queryset = Product.objects.all()
 
     # NOTE: the below behavior only happen if the complete queryset is executed first.
     # Caching depends upon the structure of code.
@@ -262,10 +262,31 @@ def say_hello(request):
     # list(queryset)  # this time Django will read results from cache
     # queryset[0]  #  gets object from cache instead of executing queryset again
 
-    queryset[0]  # Django will execute queryset and get the object
-    list(
-        queryset
-    )  # Django will again execute queryset because previously it wasn't executed completely and cached.
+    # queryset[0]  # Django will execute queryset and get the object
+    # list(
+    #     queryset
+    # )  # Django will again execute queryset because previously it wasn't executed completely and cached.
+
+    # P01-05-22-Creating Objects
+
+    # creating new collection object
+
+    # Approach: 01 (Dont execute second time; data already present in db)
+    # collection = Collection()
+    # collection.title = "Video Games"
+    # collection.featured_product = Product(pk=1)
+    # collection.save()
+
+    # Approach: 02
+    # collection = Collection(title="Video Games", featured_product=Product(pk=1))
+    # collection.save()
+
+    # Approach: 03 (save method required)
+    # Collection.objects.create(title="Video Games", featured_product=Product(pk=1))
+    # OR
+    # Collection.objects.create(
+    #     title="Video Games", featured_product_id=1
+    # )  # featured_product_id is same as featured_product__id; Django by default save ForeignKey field as id
 
     return render(
         request,
@@ -274,6 +295,6 @@ def say_hello(request):
             "name": "Kumail",
             # "orders": list(queryset),
             # "result": list(queryset),
-            "tags": list(queryset),
+            # "tags": list(queryset),
         },
     )
