@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, F
 
-from store.models import Product
+from store.models import OrderItem, Product
 
 
 def say_hello(request):
@@ -84,9 +84,33 @@ def say_hello(request):
     # P01-05-10-Limiting Results
 
     # queryset = Product.objects.all()[:5]  # limit query to first 5 products
-    queryset = Product.objects.all()[
-        5:10
-    ]  # limit query to 5 products, skip first 5 products
+    # queryset = Product.objects.all()[
+    #     5:10
+    # ]  # limit query to 5 products, skip first 5 products
+
+    # P01-05-11-Selecting fields to Query
+
+    # queryset = Product.objects.values(
+    #     "id", "title"
+    # )  # Only return 'id' and 'title' column values
+
+    # queryset = Product.objects.values(
+    #     "id", "title", "collection__title"
+    # )  # Only return 'id', 'title' and 'title' column of related 'collection' table; Performs INNER JOIN
+
+    # values method returns QuerySet containing dictionaries instead of objects of Product instance
+    # print(type(queryset))
+
+    # values_list() method returns tuples instead of dictionaries
+    # queryset = Product.objects.values_list("id", "title", "collection__title")
+
+    # EXERCISE:
+    # Select products that have been ordered and sort them by title
+
+    # SOLUTION
+    queryset = Product.objects.filter(
+        id__in=OrderItem.objects.values("product__id").distinct()
+    ).order_by("title")
 
     return render(
         request,
