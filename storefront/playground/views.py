@@ -5,7 +5,7 @@ from django.db.models import Q, F, Value, Func, ExpressionWrapper
 from django.db.models.functions import Concat
 from django.db.models.aggregates import Count, Min, Max, Avg, Sum
 from django.contrib.contenttypes.models import ContentType
-from django.db import transaction
+from django.db import transaction, connection
 
 from store.models import Collection, Customer, Order, OrderItem, Product
 from tags.models import TaggedItem
@@ -324,21 +324,45 @@ def say_hello(request):
 
     # transaction block
     # data will be committed to database only if both operations will be successful.
-    with transaction.atomic():
-        # create an order
-        order = Order()
-        order.id = 1001
-        order.customer_id = 1
-        order.save()
+    # with transaction.atomic():
+    #     # create an order
+    #     order = Order()
+    #     order.id = 1001
+    #     order.customer_id = 1
+    #     order.save()
 
-        # create order item
-        item = OrderItem()
-        item.id = 10001
-        item.order = order
-        item.product_id = 1
-        item.quantity = 1
-        item.unit_price = 10
-        item.save()
+    #     # create order item
+    #     item = OrderItem()
+    #     item.id = 10001
+    #     item.order = order
+    #     item.product_id = 1
+    #     item.quantity = 1
+    #     item.unit_price = 10
+    #     item.save()
+
+    # 🔵 P01-05-26-Executing RAW SQL Queries
+
+    # raw SQL query
+    # queryset = Product.objects.raw("SELECT * FROM store_product")
+    # queryset = Product.objects.raw("SELECT id, title FROM store_product")
+
+    # accessing database directly; bypassing the model layer
+
+    # not recommended
+    # cursor = connection.cursor()
+    # cursor.execute("SELECT * FROM store_product")
+    # cursor.close()
+
+    # recommend method
+    # with connection.cursor() as cursor:
+    #     cursor.execute("SELECT * FROM store_product")
+    # cursor will close automatically; event there is an exception
+
+    # executing stored procedures
+    # with connection.cursor() as cursor:
+    #     cursor.callproc(
+    #         # stored procedure goes here...
+    #     )
 
     return render(
         request,
