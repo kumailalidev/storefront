@@ -62,6 +62,13 @@ class Customer(models.Model):
     )
     # order_set (reverse relationship created by Order class, use order when using Count())
 
+    def __str__(self) -> str:
+        return self.first_name
+
+    # defined in admin.py
+    # class Meta:
+    #     ordering = ["first_name"]
+
 
 class Order(models.Model):
     PAYMENT_STATUS_PENDING = "P"
