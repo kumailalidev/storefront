@@ -94,7 +94,7 @@ class Order(models.Model):
     # orderitem_set
 
     def __str__(self) -> str:
-        return self.first_name
+        return str(self.id)
 
 
 class OrderItem(models.Model):
