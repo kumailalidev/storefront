@@ -8,7 +8,7 @@ class Promotion(models.Model):
 
 
 class Collection(models.Model):
-    name = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
     featured_product = models.ForeignKey(
         "Product", null=True, on_delete=models.SET_NULL, related_name="+"
     )  # circular relationship. '+' -> do not create reverse relationship
