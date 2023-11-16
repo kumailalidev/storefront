@@ -33,6 +33,7 @@ class ProductAdmin(admin.ModelAdmin):
     autocomplete_fields = [
         "collection"
     ]  # search_field must be defined in Collection admin class
+    search_fields = ["product"]
     actions = ["clear_inventory"]
     list_display = ["title", "unit_price", "inventory_status", "collection_title"]
     list_editable = ["unit_price"]
@@ -89,10 +90,19 @@ class CustomerAdmin(admin.ModelAdmin):
         return super().get_queryset(request).annotate(orders=Count("order"))
 
 
+class OrderItemInline(admin.StackedInline):
+    autocomplete_fields = ["product"]
+    model = models.OrderItem
+    min_num = 1
+    max_num = 10
+    extra = 0  # only one product field is displayed
+
+
 @admin.register(models.Order)
 class OrderAdmin(admin.ModelAdmin):
     autocomplete_fields = ["customer"]
     list_display = ["id", "placed_at", "customer"]
+    inlines = [OrderItemInline]
 
 
 class CollectionAdmin(admin.ModelAdmin):
