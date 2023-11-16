@@ -4,8 +4,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, F, Value, Func, ExpressionWrapper
 from django.db.models.functions import Concat
 from django.db.models.aggregates import Count, Min, Max, Avg, Sum
+from django.contrib.contenttypes.models import ContentType
 
 from store.models import Customer, Order, OrderItem, Product
+from tags.models import TaggedItem
 
 
 def say_hello(request):
@@ -228,10 +230,20 @@ def say_hello(request):
     # P01-05-18-Working with Expression Wrappers.
 
     # creating ExpressionWrapper object to calculate discounted price
-    discounted_price = ExpressionWrapper(
-        F("unit_price") * 0.8, output_field=DecimalField()
+    # discounted_price = ExpressionWrapper(
+    #     F("unit_price") * 0.8, output_field=DecimalField()
+    # )
+    # queryset = Product.objects.annotate(discounted_price=discounted_price)
+
+    # P01-05-19-Querying Generic Relationships.
+
+    # getting content type object
+    content_type = ContentType.objects.get_for_model(Product)
+
+    # getting tags for Product with id=1
+    queryset = TaggedItem.objects.select_related("tag").filter(
+        content_type=content_type, object_id=1
     )
-    queryset = Product.objects.annotate(discounted_price=discounted_price)
 
     return render(
         request,
@@ -239,6 +251,7 @@ def say_hello(request):
         {
             "name": "Kumail",
             # "orders": list(queryset),
-            "result": list(queryset),
+            # "result": list(queryset),
+            "tags": list(queryset),
         },
     )
