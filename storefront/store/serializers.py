@@ -97,3 +97,19 @@ class ProductSerializer(serializers.ModelSerializer):
     #     instance.unit_price = validated_data.get("unit_price")
     #     instance.save()
     #     return instance
+
+
+class CollectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Collection
+        fields = ["id", "title", "products_count"]
+
+    products_count = serializers.SerializerMethodField(
+        method_name="get_products_count"
+    )  # default method is get_<field_name>
+
+    # OPTIONAL: When using annotate we must define field name
+    # products_count = serializers.IntegerField()
+
+    def get_products_count(self, collection: Collection):
+        return collection.product_set.count()

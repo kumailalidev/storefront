@@ -123,7 +123,9 @@ class CollectionAdmin(admin.ModelAdmin):
     # overriding the base QuerySet of Collection class
     def get_queryset(self, request):
         # annotating the base queryset before returning; adds product_count field to each collection object.
-        return super().get_queryset(request).annotate(products_count=Count("product"))
+        return (
+            super().get_queryset(request).annotate(products_count=Count("product"))
+        )  # Use product instead of products if related _name=product is defined in collection field of Product model.
 
 
 admin.site.register(models.Collection, CollectionAdmin)

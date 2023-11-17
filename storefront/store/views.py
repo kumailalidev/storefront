@@ -1,13 +1,14 @@
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse
+from django.db.models import Count
 
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import Product
-from .serializers import ProductSerializer
+from .models import Product, Collection
+from .serializers import ProductSerializer, CollectionSerializer
 
 
 @api_view(["GET", "POST"])  # HTTP methods supported, GET is supported by default
@@ -88,6 +89,56 @@ def product_detail(request: Request, id):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@api_view()
+@api_view(["GET", "POST"])
+def collection_list(request):
+    # handle GET request
+    if request.method == "GET":
+        queryset = Collection.objects.prefetch_related(
+            "product_set"
+        ).all()  # fix lazy loading issue
+
+        # OPTIONAL: Annotate queryset with extra column called products_count (requires related_name=products in collection field of Product model)
+        # queryset = Collection.objects.annotate(products_counts=Count("products")).all()
+
+        serializer = CollectionSerializer(queryset, many=True)
+        return Response(serializer.data)
+    elif request.method == "POST":
+        serializer = CollectionSerializer(data=request.data)  # get the data
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
+
+
+@api_view(["GET", "PUT", "DELETE"])
 def collection_detail(request, pk):
-    return Response("OK")
+    # get the collection object
+    collection = get_object_or_404(Collection, pk=pk)
+
+    # OPTIONAL: Annotate queryset with extra field called products_count (requires related_name=products in collection field of Product model)
+    # collection = get_object_or_404(
+    #     Collection.objects.annotate(products_counts=Count("products")), pk=pk
+    # )
+
+    # handle GET request
+    if request.method == "GET":
+        serializer = CollectionSerializer(collection)
+        return Response(serializer.data)
+    # handle PUT request
+    elif request.method == "PUT":
+        serializer = CollectionSerializer(collection, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+    # handle DELETE request
+    elif request.method == "DELETE":
+        # if product is present in order item
+        if collection.product_set.count() > 0:
+            return Response(
+                {
+                    "error": "Collection can not be deleted because products are associated with it."
+                },
+                status=status.HTTP_405_METHOD_NOT_ALLOWED,
+            )
+
+        collection.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
