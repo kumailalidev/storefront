@@ -27,8 +27,21 @@ def product_list(
         )  # converts QuerySet object into dictionary
         return Response(serializer.data)
     elif request.method == "POST":
-        serializer = ProductSerializer(data=request.data)  # deserialize the data
-        # serializer.validated_data
+        serializer = ProductSerializer(
+            data=request.data
+        )  # deserializing the data into dictionary OrderedDict
+
+        # if serializer.is_valid():
+        #     print(type(serializer.validated_data))
+        #     return Response("OK")
+        # else:
+        #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # automatically raise exception
+        serializer.is_valid(
+            raise_exception=True
+        )  # validation rules comes from Model fields.
+        print(serializer.validated_data, " type: ", type(serializer.validated_data))
         return Response("OK")
 
 

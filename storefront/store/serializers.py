@@ -72,3 +72,10 @@ class ProductSerializer(serializers.ModelSerializer):
         return product.unit_price * Decimal(
             1.1
         )  # Decimal and float multiplication not allowed
+
+    # Overriding the validate method of serializer
+    # def validate(self, data):
+    #     # make sure password and confirm_password values are same
+    #     if data["password"] != data["confirm_password"]:
+    #         return serializers.ValidationError("Passwords do not match")
+    #     return data
