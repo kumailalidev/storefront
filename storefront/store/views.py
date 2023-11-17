@@ -9,19 +9,27 @@ from .models import Product
 from .serializers import ProductSerializer
 
 
-@api_view()
+@api_view(["GET", "POST"])  # HTTP methods supported, GET is supported by default
 def product_list(
     request,
 ):  # with api_view  decorator applied, the request is instance of Request object comes with Django REST framework
-    queryset = Product.objects.select_related(
-        "collection"
-    ).all()  # select_related will solve lazy loading issue
-    serializer = ProductSerializer(
-        queryset,
-        many=True,
-        context={"request": request},  # context variable used by HyperlinkRelatedField
-    )  # converts QuerySet object into dictionary
-    return Response(serializer.data)
+    # handle GET request
+    if request.method == "GET":
+        queryset = Product.objects.select_related(
+            "collection"
+        ).all()  # select_related will solve lazy loading issue
+        serializer = ProductSerializer(
+            queryset,
+            many=True,
+            context={
+                "request": request
+            },  # context variable used by HyperlinkRelatedField
+        )  # converts QuerySet object into dictionary
+        return Response(serializer.data)
+    elif request.method == "POST":
+        serializer = ProductSerializer(data=request.data)  # deserialize the data
+        # serializer.validated_data
+        return Response("OK")
 
 
 @api_view()
