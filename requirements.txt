@@ -1,3 +1,5 @@
 Django==4.2.7
 django-debug-toolbar==4.2.0
 psycopg2-binary
+mysqlclient==2.2.0
+djangorestframework==3.14.0
