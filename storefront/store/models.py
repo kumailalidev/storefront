@@ -26,7 +26,7 @@ class Product(models.Model):
     # sku = models.CharField(max_length=10, primary_key=True)
     title = models.CharField(max_length=255)  # varchar 255
     slug = models.SlugField()
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
     unit_price = models.DecimalField(
         max_digits=6, decimal_places=2, validators=[MinValueValidator(1)]
     )  # 9999.99
