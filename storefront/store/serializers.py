@@ -60,6 +60,9 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "title",
+            "description",
+            "slug",
+            "inventory",
             "unit_price",
             "price_with_tax",
             "collection",  # by default models use PrimaryKeyRelatedField serializer.
@@ -79,3 +82,18 @@ class ProductSerializer(serializers.ModelSerializer):
     #     if data["password"] != data["confirm_password"]:
     #         return serializers.ValidationError("Passwords do not match")
     #     return data
+
+    # overriding the create method
+    # def create(self, validated_data):
+    #     product = Product(**validated_data)  # unpacking the dictionary
+    #     product.other = (
+    #         1  # setting 'other' field, not listed in fields attribute of Meta class
+    #     )
+    #     product.save()
+    #     return product
+
+    # Overriding the update method
+    # def update(self, instance, validated_data):
+    #     instance.unit_price = validated_data.get("unit_price")
+    #     instance.save()
+    #     return instance

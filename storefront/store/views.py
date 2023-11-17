@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse
 
 from rest_framework.decorators import api_view
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -41,12 +42,16 @@ def product_list(
         serializer.is_valid(
             raise_exception=True
         )  # validation rules comes from Model fields.
-        print(serializer.validated_data, " type: ", type(serializer.validated_data))
-        return Response("OK")
+
+        # print(serializer.validated_data, " type: ", type(serializer.validated_data))
+
+        serializer.save()  # save to database
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-@api_view()
-def product_detail(request, id):
+@api_view(["GET", "PUT"])
+def product_detail(request: Request, id):
     # try:
     #     product = Product.objects.get(pk=id)
     #     serializer = ProductSerializer(
@@ -58,8 +63,17 @@ def product_detail(request, id):
 
     # Using get_object_or_404
     product = get_object_or_404(Product, pk=id)
-    serializer = ProductSerializer(product)
-    return Response(serializer.data)
+
+    if request.method == "GET":
+        serializer = ProductSerializer(product)
+        return Response(serializer.data)
+    elif request.method == "PUT":
+        serializer = ProductSerializer(
+            instance=product, data=request.data
+        )  # when instance is provided update method of serializer will be executed while saving
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
 @api_view()
