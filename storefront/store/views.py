@@ -13,9 +13,13 @@ from .serializers import ProductSerializer
 def product_list(
     request,
 ):  # with api_view  decorator applied, the request is instance of Request object comes with Django REST framework
-    queryset = Product.objects.all()
+    queryset = Product.objects.select_related(
+        "collection"
+    ).all()  # select_related will solve lazy loading issue
     serializer = ProductSerializer(
-        queryset, many=True
+        queryset,
+        many=True,
+        context={"request": request},  # context variable used by HyperlinkRelatedField
     )  # converts QuerySet object into dictionary
     return Response(serializer.data)
 
@@ -35,3 +39,8 @@ def product_detail(request, id):
     product = get_object_or_404(Product, pk=id)
     serializer = ProductSerializer(product)
     return Response(serializer.data)
+
+
+@api_view()
+def collection_detail(request, pk):
+    return Response("OK")
