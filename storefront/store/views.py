@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
 from .models import Product, Collection
 from .serializers import ProductSerializer, CollectionSerializer
@@ -208,22 +208,44 @@ class ProductList(ListCreateAPIView):
     #     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class ProductDetail(APIView):
-    # handle the GET request
-    def get(self, request, pk):
-        product = get_object_or_404(Product, pk=pk)
-        serializer = ProductSerializer(product)
-        return Response(serializer.data)
+# class ProductDetail(APIView):
+#     # handle the GET request
+#     def get(self, request, pk):
+#         product = get_object_or_404(Product, pk=pk)
+#         serializer = ProductSerializer(product)
+#         return Response(serializer.data)
 
-    # handle the PUT request (fully update the object)
-    def put(self, request, pk):
-        product = get_object_or_404(Product, pk=pk)
-        serializer = ProductSerializer(instance=product, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+#     # handle the PUT request (fully update the object)
+#     def put(self, request, pk):
+#         product = get_object_or_404(Product, pk=pk)
+#         serializer = ProductSerializer(instance=product, data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save()
+#         return Response(serializer.data)
 
-    # handle the DELETE request
+#     # handle the DELETE request
+#     def delete(self, request, pk):
+#         product = get_object_or_404(Product, pk=pk)
+#         if product.orderitems.count() > 0:
+#             return Response(
+#                 {
+#                     "error": "Product can not be deleted it is associated with an order item."
+#                 },
+#                 status=status.HTTP_405_METHOD_NOT_ALLOWED,
+#             )
+
+#         product.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)
+
+# P02-03-05-Customizing Generic View
+
+
+class ProductDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    # lookup_field = "pk" # default
+
+    # handle the DELETE request; Because of custom functionality we need to override inherited delete method
     def delete(self, request, pk):
         product = get_object_or_404(Product, pk=pk)
         if product.orderitems.count() > 0:
@@ -241,3 +263,24 @@ class ProductDetail(APIView):
 class CollectionList(ListCreateAPIView):
     queryset = queryset = Collection.objects.prefetch_related("product_set").all()
     serializer_class = CollectionSerializer
+
+
+class CollectionDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Collection.objects.all()
+    serializer_class = CollectionSerializer
+
+    # OPTIONAL (visit function-based view implementation for details)
+    # queryset = Collection.objects.annotate(products_count=Count("product"))
+
+    # overriding delete method due to custom functionality
+    def delete(self, request, pk):
+        # collection = get_object_or_404(Collection, pk=pk)
+        if self.queryset.product_set.count() > 0:  # if collection.products.count() > 0
+            return Response(
+                {
+                    "error": "Collection can not be deleted it is associated with products",
+                },
+                status=status.HTTP_405_METHOD_NOT_ALLOWED,
+            )
+        self.queryset.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
