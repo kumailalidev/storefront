@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.filters import SearchFilter
 
 from .filters import ProductFilter
 from .models import OrderItem, Product, Collection, Review
@@ -302,11 +303,15 @@ class ProductViewSet(ModelViewSet):
         Product.objects.all()
     )  # DRF uses queryset attribute to figure out the basename for router
     serializer_class = ProductSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, SearchFilter]
     # fields used for filtering
     # filterset_fields = ["collection_id", "unit_price"]
     # filtering using filter class
     filterset_class = ProductFilter
+    search_fields = [
+        "title",
+        "description",
+    ]  # can also add related fields such as 'collection__title
 
     # Filtering (Not required when using django_filter)
     # def get_queryset(self):
