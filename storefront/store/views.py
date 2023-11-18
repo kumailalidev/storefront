@@ -9,6 +9,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from .models import Product, Collection
 from .serializers import ProductSerializer, CollectionSerializer
@@ -184,7 +185,9 @@ class ProductList(ListCreateAPIView):
     #     return ProductSerializer  # NOTE: return reference
 
     # overriding attribute instead of method
-    queryset = Product.objects.select_related("collection").all()
+    # queryset = Product.objects.select_related("collection").all() # eager loading NO LONGER needed because we are only displaying collection id not the title (i.e. related model field)
+
+    queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
     # get serializer context (used by HyperlinkRelatedField)
@@ -261,12 +264,16 @@ class ProductDetail(RetrieveUpdateDestroyAPIView):
 
 
 class CollectionList(ListCreateAPIView):
-    queryset = queryset = Collection.objects.prefetch_related("product_set").all()
+    queryset = queryset = Collection.objects.prefetch_related(
+        "product_set"
+    ).all()  # avoids lazy loading condition
     serializer_class = CollectionSerializer
 
 
 class CollectionDetail(RetrieveUpdateDestroyAPIView):
-    queryset = Collection.objects.all()
+    queryset = queryset = Collection.objects.prefetch_related(
+        "product_set"
+    ).all()  # avoids lazy loading condition
     serializer_class = CollectionSerializer
 
     # OPTIONAL (visit function-based view implementation for details)
@@ -283,4 +290,48 @@ class CollectionDetail(RetrieveUpdateDestroyAPIView):
                 status=status.HTTP_405_METHOD_NOT_ALLOWED,
             )
         self.queryset.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# P03-03-06-ViewSets
+class ProductViewSet(ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+    def get_serializer_context(self):
+        return {"request": self.request}
+
+    # handle the DELETE request; Because of custom functionality we need to override inherited delete method
+    def delete(self, request, pk):
+        product = get_object_or_404(Product, pk=pk)
+        if product.orderitems.count() > 0:
+            return Response(
+                {
+                    "error": "Product can not be deleted it is associated with an order item."
+                },
+                status=status.HTTP_405_METHOD_NOT_ALLOWED,
+            )
+
+        product.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CollectionViewSet(ModelViewSet):
+    queryset = Collection.objects.prefetch_related("product_set").all()
+    serializer_class = CollectionSerializer
+
+    # OPTIONAL (visit function-based view implementation for details)
+    # queryset = Collection.objects.annotate(products_count=Count("product"))
+
+    # overriding delete method due to custom functionality
+    def delete(self, request, pk):
+        # collection = get_object_or_404(Collection, pk=pk)
+        if self.queryset.product_set.count() > 0:  # if collection.products.count() > 0
+            return Response(
+                {
+                    "error": "Collection can not be deleted it is associated with products",
+                },
+                status=status.HTTP_405_METHOD_NOT_ALLOWED,
+            )
+        self.queryset.delete()  # collection.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
