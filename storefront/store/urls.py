@@ -14,7 +14,7 @@ router = (
     routers.DefaultRouter()
 )  # provides two additional features, Api Root and <endpoint>.json
 router.register(
-    "products", views.ProductViewSet
+    "products", views.ProductViewSet, basename="products"
 )  # products/ endpoints should be managed by ProductViewSet
 router.register(
     "collections", views.CollectionViewSet
