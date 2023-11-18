@@ -6,9 +6,12 @@ from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.views import APIView
 
 from .models import Product, Collection
 from .serializers import ProductSerializer, CollectionSerializer
+
+# P02-02-Building RESTful APIs with Django REST Framework
 
 
 @api_view(["GET", "POST"])  # HTTP methods supported, GET is supported by default
@@ -141,4 +144,54 @@ def collection_detail(request, pk):
             )
 
         collection.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# P02-03-Advanced API Concepts
+
+
+class ProductList(APIView):  # help us write cleaner code
+    # handle GET request
+    def get(self, request):
+        queryset = Product.objects.select_related("collection").all()
+        serializer = ProductSerializer(
+            queryset, many=True, context={"request": request}
+        )
+        return Response(serializer.data)
+
+    # handle POST request
+    def post(self, request):
+        serializer = ProductSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ProductDetail(APIView):
+    # handle the GET request
+    def get(self, request, pk):
+        product = get_object_or_404(Product, pk=pk)
+        serializer = ProductSerializer(product)
+        return Response(serializer.data)
+
+    # handle the PUT request (fully update the object)
+    def put(self, request, pk):
+        product = get_object_or_404(Product, pk=pk)
+        serializer = ProductSerializer(instance=product, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    # handle the DELETE request
+    def delete(self, request, pk):
+        product = get_object_or_404(Product, pk=pk)
+        if product.orderitems.count() > 0:
+            return Response(
+                {
+                    "error": "Product can not be deleted it is associated with an order item."
+                },
+                status=status.HTTP_405_METHOD_NOT_ALLOWED,
+            )
+
+        product.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
