@@ -1,6 +1,7 @@
 from django.urls import include, path
 
 from rest_framework.routers import SimpleRouter, DefaultRouter
+from rest_framework_nested import routers
 
 from . import views
 
@@ -8,8 +9,9 @@ from pprint import pprint
 
 # router = SimpleRouter()
 
+# Parent router
 router = (
-    DefaultRouter()
+    routers.DefaultRouter()
 )  # provides two additional features, Api Root and <endpoint>.json
 router.register(
     "products", views.ProductViewSet
@@ -18,6 +20,9 @@ router.register(
     "collections", views.CollectionViewSet
 )  # collections/ endpoints should be managed by CollectionViewSet
 
+# Child router
+products_routers = routers.NestedDefaultRouter(router, "products", lookup="product")
+products_routers.register("reviews", views.ReviewViewSet, basename="product-reviews")
 
 # URLConf
 # urlpatterns = [
@@ -44,4 +49,4 @@ router.register(
 # ]
 
 # ViewSets
-urlpatterns = router.urls
+urlpatterns = router.urls + products_routers.urls
