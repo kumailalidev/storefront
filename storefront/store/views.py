@@ -11,7 +11,7 @@ from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
-from .models import Product, Collection
+from .models import OrderItem, Product, Collection
 from .serializers import ProductSerializer, CollectionSerializer
 
 # P02-02-Building RESTful APIs with Django REST Framework
@@ -301,19 +301,18 @@ class ProductViewSet(ModelViewSet):
     def get_serializer_context(self):
         return {"request": self.request}
 
-    # handle the DELETE request; Because of custom functionality we need to override inherited delete method
-    def delete(self, request, pk):
-        product = get_object_or_404(Product, pk=pk)
-        if product.orderitems.count() > 0:
+    # handle the DELETE request; Because of custom functionality we need to override inherited destroy method from ModelViewSet
+    def destroy(self, request, *args, **kwargs):
+        if (
+            OrderItem.objects.filter(product_id=kwargs["pk"]).count() > 0
+        ):  # remember product_id is same as product__id in case of ForeignKey fields.
             return Response(
                 {
                     "error": "Product can not be deleted it is associated with an order item."
                 },
                 status=status.HTTP_405_METHOD_NOT_ALLOWED,
             )
-
-        product.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return super().destroy(request, *args, **kwargs)
 
 
 class CollectionViewSet(ModelViewSet):
@@ -323,15 +322,14 @@ class CollectionViewSet(ModelViewSet):
     # OPTIONAL (visit function-based view implementation for details)
     # queryset = Collection.objects.annotate(products_count=Count("product"))
 
-    # overriding delete method due to custom functionality
-    def delete(self, request, pk):
-        # collection = get_object_or_404(Collection, pk=pk)
-        if self.queryset.product_set.count() > 0:  # if collection.products.count() > 0
+    # overriding inherited destroy method from ModelViewSet
+    def destroy(self, request, *args, **kwargs):
+        if Product.objects.filter(collection_id=kwargs["pk"]).count() > 0:
             return Response(
                 {
                     "error": "Collection can not be deleted it is associated with products",
                 },
                 status=status.HTTP_405_METHOD_NOT_ALLOWED,
             )
-        self.queryset.delete()  # collection.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return super().destroy(request, *args, **kwargs)
