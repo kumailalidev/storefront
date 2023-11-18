@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
+from rest_framework.generics import ListCreateAPIView
 
 from .models import Product, Collection
 from .serializers import ProductSerializer, CollectionSerializer
@@ -151,21 +152,60 @@ def collection_detail(request, pk):
 # P02-03-Advanced API Concepts
 
 
-class ProductList(APIView):  # help us write cleaner code
-    # handle GET request
-    def get(self, request):
-        queryset = Product.objects.select_related("collection").all()
-        serializer = ProductSerializer(
-            queryset, many=True, context={"request": request}
-        )
-        return Response(serializer.data)
+# class ProductList(APIView):  # help us write cleaner code
+#     # handle GET request
+#     def get(self, request):
+#         queryset = Product.objects.select_related("collection").all()
+#         serializer = ProductSerializer(
+#             queryset, many=True, context={"request": request}
+#         )
+#         return Response(serializer.data)
 
-    # handle POST request
-    def post(self, request):
-        serializer = ProductSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+#     # handle POST request
+#     def post(self, request):
+#         serializer = ProductSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save()
+#         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+# P02-03-04-Generic Views
+
+
+class ProductList(ListCreateAPIView):
+    # NOTE: Generic views also created form and raw data tabs for POST, PUT and PATCH requests.
+
+    # either override queryset attribute of get_queryset method.
+    # def get_queryset(self):
+    #     return Product.objects.select_related("collection").all()
+
+    # either override serializer_class attribute of get_serializer_class method.
+    # def get_serializer_class(self):
+    #     return ProductSerializer  # NOTE: return reference
+
+    # overriding attribute instead of method
+    queryset = Product.objects.select_related("collection").all()
+    serializer_class = ProductSerializer
+
+    # get serializer context (used by HyperlinkRelatedField)
+    def get_serializer_context(self):
+        return {"request": self.request}
+
+    # The below get and post methods are already implemented in inherited class ListCreateAPIView
+    # # handle GET request
+    # def get(self, request):
+    #     queryset = Product.objects.select_related("collection").all()
+    #     serializer = ProductSerializer(
+    #         queryset, many=True, context={"request": request}
+    #     )
+    #     return Response(serializer.data)
+
+    # # handle POST request
+    # def post(self, request):
+    #     serializer = ProductSerializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     serializer.save()
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class ProductDetail(APIView):
@@ -196,3 +236,8 @@ class ProductDetail(APIView):
 
         product.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CollectionList(ListCreateAPIView):
+    queryset = queryset = Collection.objects.prefetch_related("product_set").all()
+    serializer_class = CollectionSerializer

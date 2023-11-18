@@ -109,7 +109,7 @@ class CollectionSerializer(serializers.ModelSerializer):
     )  # default method is get_<field_name>
 
     # OPTIONAL: When using annotate we must define field name
-    # products_count = serializers.IntegerField()
+    # products_count = serializers.IntegerField(read_only=True) # field won't be available during creating or updating a collection object.
 
     def get_products_count(self, collection: Collection):
         return collection.product_set.count()
