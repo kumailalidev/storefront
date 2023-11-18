@@ -11,7 +11,9 @@ from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.pagination import PageNumberPagination
 
+from .pagination import DefaultPagination
 from .filters import ProductFilter
 from .models import OrderItem, Product, Collection, Review
 from .serializers import ProductSerializer, CollectionSerializer, ReviewSerializer
@@ -313,6 +315,10 @@ class ProductViewSet(ModelViewSet):
         "description",
     ]  # can also add related fields such as 'collection__title
     ordering_fields = ["unit_price", "last_update"]
+    # pagination_class = PageNumberPagination  # can be set in DEFAULT_PAGINATION_CLASS of REST_FRAMEWORK in settings.py
+
+    # to suppress the DEFAULT_PAGINATION_CLASS warning using custom pagination class inherited from PageNumberPagination with page_size=10
+    pagination_class = DefaultPagination
 
     # Filtering (Not required when using django_filter)
     # def get_queryset(self):
