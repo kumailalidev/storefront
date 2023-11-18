@@ -11,8 +11,11 @@ from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
+from .filters import ProductFilter
 from .models import OrderItem, Product, Collection, Review
 from .serializers import ProductSerializer, CollectionSerializer, ReviewSerializer
+
+from django_filters.rest_framework import DjangoFilterBackend
 
 # P02-02-Building RESTful APIs with Django REST Framework
 
@@ -295,21 +298,28 @@ class CollectionDetail(RetrieveUpdateDestroyAPIView):
 
 # P03-03-06-ViewSets
 class ProductViewSet(ModelViewSet):
-    # queryset = Product.objects.all() # DRF uses queryset attribute to figure out the basename for router
+    queryset = (
+        Product.objects.all()
+    )  # DRF uses queryset attribute to figure out the basename for router
     serializer_class = ProductSerializer
+    filter_backends = [DjangoFilterBackend]
+    # fields used for filtering
+    # filterset_fields = ["collection_id", "unit_price"]
+    # filtering using filter class
+    filterset_class = ProductFilter
 
-    # P02-03-10-Filtering
-    def get_queryset(self):
-        queryset = Product.objects.all()
-        # collection_id = self.request.query_params["collection_id"] # assumes query_params dictionary have key 'collection_id'
-        collection_id = self.request.query_params.get(
-            "collection_id"
-        )  # returns None if 'collection_id' key does not exists
+    # Filtering (Not required when using django_filter)
+    # def get_queryset(self):
+    #     queryset = Product.objects.all()
+    #     # collection_id = self.request.query_params["collection_id"] # assumes query_params dictionary have key 'collection_id'
+    #     collection_id = self.request.query_params.get(
+    #         "collection_id"
+    #     )  # returns None if 'collection_id' key does not exists
 
-        if collection_id is not None:
-            queryset = queryset.filter(collection_id=collection_id)
+    #     if collection_id is not None:
+    #         queryset = queryset.filter(collection_id=collection_id)
 
-        return queryset
+    #     return queryset
 
     def get_serializer_context(self):
         return {"request": self.request}
