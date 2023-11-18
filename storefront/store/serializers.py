@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from rest_framework import serializers
 
-from .models import Product, Collection
+from .models import Product, Collection, Review
 
 
 # nested object
@@ -113,3 +113,15 @@ class CollectionSerializer(serializers.ModelSerializer):
 
     def get_products_count(self, collection: Collection):
         return collection.product_set.count()
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = [
+            "id",
+            "date",
+            "name",
+            "description",
+            "product",
+        ]

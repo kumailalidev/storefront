@@ -11,8 +11,8 @@ from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
-from .models import OrderItem, Product, Collection
-from .serializers import ProductSerializer, CollectionSerializer
+from .models import OrderItem, Product, Collection, Review
+from .serializers import ProductSerializer, CollectionSerializer, ReviewSerializer
 
 # P02-02-Building RESTful APIs with Django REST Framework
 
@@ -324,7 +324,9 @@ class CollectionViewSet(ModelViewSet):
 
     # overriding inherited destroy method from ModelViewSet
     def destroy(self, request, *args, **kwargs):
-        if Product.objects.filter(collection_id=kwargs["pk"]).count() > 0:
+        if (
+            Product.objects.filter(collection_id=kwargs["pk"]).count() > 0
+        ):  # collection_id==collection__id
             return Response(
                 {
                     "error": "Collection can not be deleted it is associated with products",
@@ -333,3 +335,8 @@ class CollectionViewSet(ModelViewSet):
             )
 
         return super().destroy(request, *args, **kwargs)
+
+
+class ReviewViewSet(ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
