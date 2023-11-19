@@ -418,7 +418,7 @@ class CartItemViewSet(ModelViewSet):
     """
 
     # overriding allowed HTTP methods
-    http_method_names = ["get", "post", "patch", "delete"]
+    http_method_names = ["get", "post", "patch", "delete"]  # SHOULD BE LOWERCASE
 
     # serializer_class = CartItemSerializer
 
