@@ -19,11 +19,14 @@ router.register(
 router.register(
     "collections", views.CollectionViewSet
 )  # collections/ endpoints should be managed by CollectionViewSet
-router.register("carts", views.CartViewSet)
+router.register("carts", views.CartViewSet, basename="carts")
+
 
 # Child router
 products_routers = routers.NestedDefaultRouter(router, "products", lookup="product")
 products_routers.register("reviews", views.ReviewViewSet, basename="product-reviews")
+carts_routers = routers.NestedDefaultRouter(router, "carts", lookup="cart")
+carts_routers.register("items", views.CartItemViewSet, basename="cart-items")
 
 # URLConf
 # urlpatterns = [
@@ -50,4 +53,4 @@ products_routers.register("reviews", views.ReviewViewSet, basename="product-revi
 # ]
 
 # ViewSets
-urlpatterns = router.urls + products_routers.urls
+urlpatterns = router.urls + products_routers.urls + carts_routers.urls

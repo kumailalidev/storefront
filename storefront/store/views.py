@@ -20,8 +20,9 @@ from rest_framework.pagination import PageNumberPagination
 
 from .pagination import DefaultPagination
 from .filters import ProductFilter
-from .models import Cart, OrderItem, Product, Collection, Review
+from .models import Cart, CartItem, OrderItem, Product, Collection, Review
 from .serializers import (
+    CartItemSerializer,
     CartSerializer,
     ProductSerializer,
     CollectionSerializer,
@@ -407,3 +408,18 @@ class CartViewSet(
         "items__product"
     ).all()  # eager loading, prefetch all the related items
     serializer_class = CartSerializer
+
+
+class CartItemViewSet(ModelViewSet):
+    """
+    Viewset for listing, updating and deleting cart items.
+    """
+
+    serializer_class = CartItemSerializer
+
+    def get_queryset(self):
+        return (
+            CartItem.objects.filter(cart_id=self.kwargs["cart_pk"])
+            .select_related("product")
+            .all()
+        )
