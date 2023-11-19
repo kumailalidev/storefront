@@ -1,4 +1,7 @@
-from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer
+from djoser.serializers import (
+    UserCreateSerializer as BaseUserCreateSerializer,
+    UserSerializer as BaseUserSerializer,
+)
 from rest_framework import serializers
 
 
@@ -14,4 +17,15 @@ class UserCreateSerializer(BaseUserCreateSerializer):
             "first_name",
             "last_name",
             # "birth_date",  # not part of DEFAULT_AUTH_USER model.
+        ]
+
+
+class UserSerializer(BaseUserSerializer):
+    class Meta(BaseUserSerializer.Meta):
+        fields = [
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
         ]
