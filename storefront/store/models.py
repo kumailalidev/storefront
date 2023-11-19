@@ -121,6 +121,12 @@ class Order(models.Model):
     def __str__(self) -> str:
         return str(self.id)
 
+    class Meta:
+        # creating custom permissions
+        permissions = [
+            ("cancel_order", "Can cancel order"),
+        ]
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(
