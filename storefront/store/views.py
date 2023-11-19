@@ -28,6 +28,7 @@ from .serializers import (
     ProductSerializer,
     CollectionSerializer,
     ReviewSerializer,
+    UpdateCartItemSerializer,
 )
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -416,12 +417,17 @@ class CartItemViewSet(ModelViewSet):
     Viewset for listing, updating and deleting cart items.
     """
 
+    # overriding allowed HTTP methods
+    http_method_names = ["get", "post", "patch", "delete"]
+
     # serializer_class = CartItemSerializer
 
     # Dynamically returning serializer based on request method
     def get_serializer_class(self):
         if self.request.method == "POST":
             return AddCartItemSerializer
+        elif self.request.method == "PATCH":  # PUT request is prevented
+            return UpdateCartItemSerializer
         return CartItemSerializer
 
     # passing cart_id to serializer context
