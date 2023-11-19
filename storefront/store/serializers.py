@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from rest_framework import serializers
 
-from .models import Product, Collection, Review
+from .models import Cart, Product, Collection, Review
 
 
 # nested object
@@ -126,3 +126,12 @@ class ReviewSerializer(serializers.ModelSerializer):
         return Review.objects.create(
             product_id=product_id, **validated_data
         )  # product_id==product
+
+
+class CartSerializer(serializers.ModelSerializer):
+    # read only id field, UUID created automatically when sending request to endpoint
+    id = serializers.UUIDField(read_only=True)
+
+    class Meta:
+        model = Cart
+        fields = ["id"]

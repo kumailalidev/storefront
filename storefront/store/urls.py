@@ -19,6 +19,7 @@ router.register(
 router.register(
     "collections", views.CollectionViewSet
 )  # collections/ endpoints should be managed by CollectionViewSet
+router.register("carts", views.CartViewSet)
 
 # Child router
 products_routers = routers.NestedDefaultRouter(router, "products", lookup="product")
