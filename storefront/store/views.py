@@ -22,6 +22,7 @@ from .pagination import DefaultPagination
 from .filters import ProductFilter
 from .models import Cart, CartItem, OrderItem, Product, Collection, Review
 from .serializers import (
+    AddCartItemSerializer,
     CartItemSerializer,
     CartSerializer,
     ProductSerializer,
@@ -415,7 +416,17 @@ class CartItemViewSet(ModelViewSet):
     Viewset for listing, updating and deleting cart items.
     """
 
-    serializer_class = CartItemSerializer
+    # serializer_class = CartItemSerializer
+
+    # Dynamically returning serializer based on request method
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return AddCartItemSerializer
+        return CartItemSerializer
+
+    # passing cart_id to serializer context
+    def get_serializer_context(self):
+        return {"cart_id": self.kwargs["cart_pk"]}
 
     def get_queryset(self):
         return (

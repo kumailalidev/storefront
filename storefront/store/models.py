@@ -131,7 +131,7 @@ class CartItem(models.Model):
         Cart, on_delete=models.CASCADE, related_name="items"
     )  #  default related name is cartitems_set
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.PositiveSmallIntegerField()
+    quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
 
     class Meta:
         # make sure there are no duplicate records of a same product in same cart
