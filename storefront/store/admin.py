@@ -129,3 +129,6 @@ class CollectionAdmin(admin.ModelAdmin):
 
 
 admin.site.register(models.Collection, CollectionAdmin)
+
+admin.site.register(models.Cart)
+admin.site.register(models.CartItem)

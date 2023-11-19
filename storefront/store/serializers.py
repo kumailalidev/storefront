@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from rest_framework import serializers
 
-from .models import Cart, Product, Collection, Review
+from .models import Cart, CartItem, Product, Collection, Review
 
 
 # nested object
@@ -128,10 +128,85 @@ class ReviewSerializer(serializers.ModelSerializer):
         )  # product_id==product
 
 
+# class CartItemSerializer(serializers.ModelSerializer):
+#     total_price = serializers.SerializerMethodField(method_name="get_total_price")
+
+#     class Meta:
+#         model = CartItem
+#         fields = [
+#             "product",
+#             "quantity",
+#             "total_price",
+#         ]
+
+#     def get_total_price(self, cartitem):
+#         return cartitem.product.unit_price * Decimal(cartitem.quantity)
+
+
+# class CartSerializer(serializers.ModelSerializer):
+#     # read only id field, UUID created automatically when sending request to endpoint
+#     id = serializers.UUIDField(read_only=True)
+#     items = CartItemSerializer(
+#         many=True,
+#         read_only=True,
+#     )  # requires field name to be same as related_name i.e. items
+#     # items = serializers.SerializerMethodField(method_name="get_items")
+#     total_price = serializers.SerializerMethodField(method_name="get_total_price")
+
+#     class Meta:
+#         model = Cart
+#         fields = ["id", "items", "total_price"]
+
+#     # def get_items(self, cart):
+#     #     cart_items = CartItem.objects.filter(cart_id=cart)
+#     #     return CartItemSerializer(cart_items, many=True).data
+
+#     def get_total_price(self, cart):
+#         cart_items = CartItem.objects.filter(cart_id=cart)
+#         total_price = total_price = sum(
+#             item.product.unit_price * item.quantity for item in cart_items
+#         )
+#         # for item in cart_items:
+#         #     total_price += item.product.unit_price * item.quantity
+#         return total_price
+
+
+# Solution: 2
+
+
+# simplified product serializer, contains less information
+class SimpleProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ["id", "title", "unit_price"]
+
+
+class CartItemSerializer(serializers.ModelSerializer):
+    # redefining product field
+    product = SimpleProductSerializer()
+
+    total_price = serializers.SerializerMethodField()
+
+    def get_total_price(self, cart_item: CartItem):
+        return cart_item.quantity * cart_item.product.unit_price
+
+    class Meta:
+        model = CartItem
+        fields = ["id", "product", "quantity", "total_price"]
+
+
 class CartSerializer(serializers.ModelSerializer):
-    # read only id field, UUID created automatically when sending request to endpoint
     id = serializers.UUIDField(read_only=True)
+    items = CartItemSerializer(many=True)
+    total_price = serializers.SerializerMethodField()
+
+    def get_total_price(self, cart):
+        # list comprehension
+        # cart.items.all() returns a manager obj. which is iterable
+        return sum(
+            [item.quantity * item.product.unit_price for item in cart.items.all()]
+        )
 
     class Meta:
         model = Cart
-        fields = ["id"]
+        fields = ["id", "items", "total_price"]

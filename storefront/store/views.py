@@ -7,7 +7,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from rest_framework.mixins import ListModelMixin, CreateModelMixin
+from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -391,10 +391,12 @@ class ReviewViewSet(ModelViewSet):
         return {"product_id": self.kwargs["product_pk"]}
 
 
-class CartViewSet(CreateModelMixin, GenericViewSet):
+class CartViewSet(CreateModelMixin, RetrieveModelMixin, GenericViewSet):
     """
-    Custom viewset for creating a cart
+    Custom viewset for creating a cart, retrieving a cart
     """
 
-    queryset = Cart.objects.all()
+    queryset = Cart.objects.prefetch_related(
+        "items__product"
+    ).all()  # eager loading, prefetch all the related items
     serializer_class = CartSerializer
