@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from rest_framework.mixins import (
     ListModelMixin,
     CreateModelMixin,
+    UpdateModelMixin,
     RetrieveModelMixin,
     DestroyModelMixin,
 )
@@ -20,11 +21,12 @@ from rest_framework.pagination import PageNumberPagination
 
 from .pagination import DefaultPagination
 from .filters import ProductFilter
-from .models import Cart, CartItem, OrderItem, Product, Collection, Review
+from .models import Cart, CartItem, Customer, OrderItem, Product, Collection, Review
 from .serializers import (
     AddCartItemSerializer,
     CartItemSerializer,
     CartSerializer,
+    CustomerSerializer,
     ProductSerializer,
     CollectionSerializer,
     ReviewSerializer,
@@ -440,3 +442,10 @@ class CartItemViewSet(ModelViewSet):
             .select_related("product")
             .all()
         )
+
+
+class CustomerViewSet(
+    CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet
+):
+    queryset = Customer.objects.all()
+    serializer_class = CustomerSerializer
