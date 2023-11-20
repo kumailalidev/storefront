@@ -19,9 +19,14 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericV
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from rest_framework.permissions import (
+    IsAuthenticated,
+    AllowAny,
+    IsAdminUser,
+    DjangoModelPermissions,
+)
 
-from .permissions import IsAdminOrReadOnly
+from .permissions import FullDjangoModelPermissions, IsAdminOrReadOnly
 from .pagination import DefaultPagination
 from .filters import ProductFilter
 from .models import Cart, CartItem, Customer, OrderItem, Product, Collection, Review
@@ -457,6 +462,10 @@ class CustomerViewSet(
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
     # If any permission fail, API endpoint will not be accessible
+    # DjangoModelPermissions: User needs to be authenticated and have relevant model permission.
+    #   GET, OPTIONS and HEAD is allowed by default but changed in permissions.py
+    # permission_classes = [FullDjangoModelPermissions]
+
     permission_classes = [IsAdminUser]
 
     # Overriding permissions for specific method
