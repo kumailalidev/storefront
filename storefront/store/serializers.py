@@ -2,6 +2,8 @@ from decimal import Decimal
 
 from rest_framework import serializers
 
+from django.db import transaction
+
 from .models import (
     Cart,
     CartItem,
@@ -317,12 +319,38 @@ class CreateOrderSerializer(serializers.Serializer):
 
     # overriding save method to delete cart on placing order.
     def save(self, **kwargs):
-        print(self.validated_data["cart_id"])
-        print(self.context["user_id"])
+        # transaction
+        with transaction.atomic():
+            cart_id = self.validated_data["cart_id"]
 
-        # getting customer
-        (customer, created) = Customer.objects.get_or_create(
-            user_id=self.context["user_id"]
-        )
-        # Creating a order object
-        Order.objects.create(customer=customer)
+            print(self.validated_data["cart_id"])
+            print(self.context["user_id"])
+
+            # getting customer
+            (customer, created) = Customer.objects.get_or_create(
+                user_id=self.context["user_id"]
+            )
+            # Creating a order object
+            order = Order.objects.create(customer=customer)
+
+            # get cart items
+            cart_items = CartItem.objects.select_related("product").filter(
+                cart_id=cart_id
+            )
+
+            # create order items
+            order_items = [
+                OrderItem(
+                    order=order,
+                    product=item.product,
+                    unit_price=item.product.unit_price,
+                    quantity=item.quantity,
+                )
+                for item in cart_items
+            ]
+
+            # bulk create OrderItem objects
+            OrderItem.objects.bulk_create(order_items)
+
+            # now delete the shopping cart
+            Cart.objects.filter(pk=cart_id).delete()
