@@ -19,6 +19,7 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericV
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from .pagination import DefaultPagination
 from .filters import ProductFilter
@@ -450,10 +451,20 @@ class CustomerViewSet(
 ):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
+    # If any permission fail, API endpoint will not be accessible
+    permission_classes = [IsAuthenticated]
+
+    # Overriding permissions for specific method
+    def get_permissions(self):
+        # for GET method
+        if self.request.method == "GET":
+            return [AllowAny()]  # NOTE: list of objects should be returned
+        return [IsAuthenticated()]  # ALl other request requires authentication
 
     # Custom action (just like GET, POST etc)
     # True: Action is available on detail view e.g. customers/me
     # False: Action is available on list view e.g. customers/:id/me
+    # NOTE: we can override permission classes of this action by using permission_classes attribute
     @action(detail=False, methods=["GET", "PUT"])
     def me(self, request):
         # NOTE: If user is not logged in will throw an exception IntegrityError

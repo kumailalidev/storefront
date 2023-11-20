@@ -158,6 +158,11 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+    # Global level permissions
+    # "DEFAULT_PERMISSION_CLASSES": [
+    #     # every api endpoint needs authentication
+    #     "rest_framework.permissions.IsAuthenticated",
+    # ],
 }
 
 
