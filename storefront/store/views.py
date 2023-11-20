@@ -33,12 +33,22 @@ from .permissions import (
 )
 from .pagination import DefaultPagination
 from .filters import ProductFilter
-from .models import Cart, CartItem, Customer, OrderItem, Product, Collection, Review
+from .models import (
+    Cart,
+    CartItem,
+    Customer,
+    Order,
+    OrderItem,
+    Product,
+    Collection,
+    Review,
+)
 from .serializers import (
     AddCartItemSerializer,
     CartItemSerializer,
     CartSerializer,
     CustomerSerializer,
+    OrderSerializer,
     ProductSerializer,
     CollectionSerializer,
     ReviewSerializer,
@@ -505,3 +515,8 @@ class CustomerViewSet(
     @action(detail=True, permission_classes=[ViewCustomerHistoryPermission])
     def history(self, request, pk):
         return Response("Ok")
+
+
+class OrderViewSet(ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer

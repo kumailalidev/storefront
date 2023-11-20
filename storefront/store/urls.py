@@ -21,6 +21,7 @@ router.register(
 )  # collections/ endpoints should be managed by CollectionViewSet
 router.register("carts", views.CartViewSet, basename="carts")
 router.register("customers", views.CustomerViewSet)
+router.register("orders", views.OrderViewSet)
 
 
 # Child router
