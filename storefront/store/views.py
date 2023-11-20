@@ -500,9 +500,12 @@ class CustomerViewSet(
     )  # Only authenticated users can view this endpoint
     def me(self, request):
         # NOTE: If user is not logged in will throw an exception IntegrityError
-        (customer, created) = Customer.objects.get_or_create(
-            user_id=request.user.id
-        )  # returns (Customer, bool)
+
+        # (customer, created) = Customer.objects.get_or_create(
+        #     user_id=request.user.id
+        # )  # returns (Customer, bool)
+        # we are using signals therefore we no longer need to worry about creating a customer
+        customer = Customer.objects.get(user_id=request.user.id)
         if request.method == "GET":
             serializer = CustomerSerializer(customer)
             return Response(
@@ -575,7 +578,11 @@ class OrderViewSet(ModelViewSet):
 
         # if customer is logged in return only its orders
         # get the customer id
-        (customer_id, created) = Customer.objects.only("id").get_or_create(
-            user_id=user.id
-        )  # NOTE: Violates Command Query Separation pattern, if customer not not found it will create a customer and that should not be intended behavior
+        # (customer_id, created) = Customer.objects.only("id").get_or_create(
+        #     user_id=user.id
+        # )  # NOTE: Violates Command Query Separation pattern, if customer not not found it will create a customer and that should not be intended behavior
+
+        # we are using signals therefore we no longer need to worry about creating a customer
+        customer_id = Customer.objects.only("id").get(user_id=user.id)
+
         return Order.objects.filter(customer_id=customer_id)

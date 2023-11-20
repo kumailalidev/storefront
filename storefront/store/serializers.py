@@ -341,9 +341,11 @@ class CreateOrderSerializer(serializers.Serializer):
             print(self.context["user_id"])
 
             # getting customer
-            (customer, created) = Customer.objects.get_or_create(
-                user_id=self.context["user_id"]
-            )
+            # (customer, created) = Customer.objects.get_or_create(
+            #     user_id=self.context["user_id"]
+            # )
+            # we are using signals therefore we no longer need to worry about creating a customer
+            customer = Customer.objects.get(user_id=self.context["user_id"])
             # Creating a order object
             order = Order.objects.create(customer=customer)
 
