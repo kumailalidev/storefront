@@ -15,6 +15,7 @@ from .models import (
     Review,
 )
 
+from .signals import order_created
 
 # nested object
 # class CollectionSerializer(serializers.Serializer):
@@ -370,5 +371,8 @@ class CreateOrderSerializer(serializers.Serializer):
 
             # now delete the shopping cart
             Cart.objects.filter(pk=cart_id).delete()
+
+            # Sending a signal
+            order_created.send_robust(self.__class__, order=order)
 
             return order
