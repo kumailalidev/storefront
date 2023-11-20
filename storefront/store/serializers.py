@@ -309,3 +309,20 @@ class OrderSerializer(serializers.ModelSerializer):
             "payment_status",
             "items",
         ]
+
+
+# using base serializer because of usage of fields from different models
+class CreateOrderSerializer(serializers.Serializer):
+    cart_id = serializers.UUIDField()
+
+    # overriding save method to delete cart on placing order.
+    def save(self, **kwargs):
+        print(self.validated_data["cart_id"])
+        print(self.context["user_id"])
+
+        # getting customer
+        (customer, created) = Customer.objects.get_or_create(
+            user_id=self.context["user_id"]
+        )
+        # Creating a order object
+        Order.objects.create(customer=customer)
