@@ -19,8 +19,9 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericV
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 
+from .permissions import IsAdminOrReadOnly
 from .pagination import DefaultPagination
 from .filters import ProductFilter
 from .models import Cart, CartItem, Customer, OrderItem, Product, Collection, Review
@@ -350,6 +351,8 @@ class ProductViewSet(ModelViewSet):
 
     #     return queryset
 
+    permission_classes = [IsAdminOrReadOnly]
+
     def get_serializer_context(self):
         return {"request": self.request}
 
@@ -370,6 +373,7 @@ class ProductViewSet(ModelViewSet):
 class CollectionViewSet(ModelViewSet):
     queryset = Collection.objects.prefetch_related("product_set").all()
     serializer_class = CollectionSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
     # OPTIONAL (visit function-based view implementation for details)
     # queryset = Collection.objects.annotate(products_count=Count("product"))
@@ -447,25 +451,28 @@ class CartItemViewSet(ModelViewSet):
 
 
 class CustomerViewSet(
-    CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet
+    # CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet
+    ModelViewSet
 ):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
     # If any permission fail, API endpoint will not be accessible
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     # Overriding permissions for specific method
-    def get_permissions(self):
-        # for GET method
-        if self.request.method == "GET":
-            return [AllowAny()]  # NOTE: list of objects should be returned
-        return [IsAuthenticated()]  # ALl other request requires authentication
+    # def get_permissions(self):
+    #     # for GET method
+    #     if self.request.method == "GET":
+    #         return [AllowAny()]  # NOTE: list of objects should be returned
+    #     return [IsAuthenticated()]  # ALl other request requires authentication
 
     # Custom action (just like GET, POST etc)
     # True: Action is available on detail view e.g. customers/me
     # False: Action is available on list view e.g. customers/:id/me
     # NOTE: we can override permission classes of this action by using permission_classes attribute
-    @action(detail=False, methods=["GET", "PUT"])
+    @action(
+        detail=False, methods=["GET", "PUT"], permission_classes=[IsAuthenticated]
+    )  # Only authenticated users can view this endpoint
     def me(self, request):
         # NOTE: If user is not logged in will throw an exception IntegrityError
         (customer, created) = Customer.objects.get_or_create(
