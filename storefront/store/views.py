@@ -518,5 +518,25 @@ class CustomerViewSet(
 
 
 class OrderViewSet(ModelViewSet):
-    queryset = Order.objects.all()
+    # queryset = Order.objects.all()
     serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Modifying queryset so that the orders only available to be viewed by Admin/Staff and customer
+        who placed this order.
+        """
+        # get the user
+        user = self.request.user
+
+        # return all order objects if staff user is logged in
+        if user.is_staff:
+            return Order.objects.all()
+
+        # if customer is logged in return only its orders
+        # get the customer id
+        (customer_id, created) = Customer.objects.only("id").get_or_create(
+            user_id=user.id
+        )  # NOTE: Violates Command Query Separation pattern, if customer not not found it will create a customer and that should not be intended behavior
+        return Order.objects.filter(customer_id=customer_id)
