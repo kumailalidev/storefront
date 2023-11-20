@@ -524,8 +524,21 @@ class OrderViewSet(ModelViewSet):
 
     permission_classes = [IsAuthenticated]
 
-    def get_serializer_context(self):
-        return {"user_id": self.request.user.id}
+    # overriding create method so that on creating a order via a
+    # POST method we return the OrderItem on successful order creation
+    # instead of only cart_id (because of using CreateOrderSerializer)
+    # on POST request.
+    def create(self, request, *args, **kwargs):
+        serializer = CreateOrderSerializer(
+            data=request.data, context={"user_id": self.request.user.id}
+        )
+        serializer.is_valid(raise_exception=True)
+        order = serializer.save()
+        serializer = OrderSerializer(order)
+        return Response(serializer.data)
+
+    # def get_serializer_context(self):
+    #     return {"user_id": self.request.user.id}
 
     def get_serializer_class(self):
         if self.request.method == "POST":
