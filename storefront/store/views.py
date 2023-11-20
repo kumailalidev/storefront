@@ -522,7 +522,20 @@ class OrderViewSet(ModelViewSet):
     # queryset = Order.objects.all()
     # serializer_class = OrderSerializer
 
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
+
+    http_method_names = [
+        "get",
+        "patch",
+        "delete",
+        "head",
+        "options",
+    ]
+
+    def get_permissions(self):
+        if self.request.method in ["PATCH", "DELETE"]:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
 
     # overriding create method so that on creating a order via a
     # POST method we return the OrderItem on successful order creation
