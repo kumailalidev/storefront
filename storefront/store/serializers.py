@@ -317,6 +317,14 @@ class OrderSerializer(serializers.ModelSerializer):
 class CreateOrderSerializer(serializers.Serializer):
     cart_id = serializers.UUIDField()
 
+    # validating cart_id if it exists or not
+    def validate_cart_id(self, cart_id):
+        if not Cart.objects.filter(pk=cart_id).exists():
+            raise serializers.ValidationError("No cart with the given ID was found.")
+        if CartItem.objects.filter(cart_id=cart_id).count() == 0:
+            raise serializers.ValidationError("The cart is empty.")
+        return cart_id
+
     # overriding save method to delete cart on placing order.
     def save(self, **kwargs):
         # transaction
