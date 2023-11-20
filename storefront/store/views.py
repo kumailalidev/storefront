@@ -26,7 +26,11 @@ from rest_framework.permissions import (
     DjangoModelPermissions,
 )
 
-from .permissions import FullDjangoModelPermissions, IsAdminOrReadOnly
+from .permissions import (
+    FullDjangoModelPermissions,
+    IsAdminOrReadOnly,
+    ViewCustomerHistoryPermission,
+)
 from .pagination import DefaultPagination
 from .filters import ProductFilter
 from .models import Cart, CartItem, Customer, OrderItem, Product, Collection, Review
@@ -497,3 +501,7 @@ class CustomerViewSet(
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
+
+    @action(detail=True, permission_classes=[ViewCustomerHistoryPermission])
+    def history(self, request, pk):
+        return Response("Ok")
