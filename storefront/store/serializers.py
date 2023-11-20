@@ -313,6 +313,12 @@ class OrderSerializer(serializers.ModelSerializer):
         ]
 
 
+class UpdateOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ["payment_status"]
+
+
 # using base serializer because of usage of fields from different models
 class CreateOrderSerializer(serializers.Serializer):
     cart_id = serializers.UUIDField()
