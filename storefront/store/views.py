@@ -18,6 +18,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.decorators import action
 
 from .pagination import DefaultPagination
 from .filters import ProductFilter
@@ -449,3 +450,23 @@ class CustomerViewSet(
 ):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
+
+    # Custom action (just like GET, POST etc)
+    # True: Action is available on detail view e.g. customers/me
+    # False: Action is available on list view e.g. customers/:id/me
+    @action(detail=False, methods=["GET", "PUT"])
+    def me(self, request):
+        # NOTE: If user is not logged in will throw an exception IntegrityError
+        (customer, created) = Customer.objects.get_or_create(
+            user_id=request.user.id
+        )  # returns (Customer, bool)
+        if request.method == "GET":
+            serializer = CustomerSerializer(customer)
+            return Response(
+                serializer.data
+            )  # AnonymousUser if user is authenticated; NOTE: request.user is not JSON serializable by default
+        elif request.method == "PUT":
+            serializer = CustomerSerializer(customer, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
