@@ -10,6 +10,7 @@ from django.core.mail import send_mail, mail_admins, BadHeaderError, EmailMessag
 from templated_mail.mail import BaseEmailMessage
 
 from store.models import Collection, Customer, Order, OrderItem, Product
+from .tasks import notify_customers
 from tags.models import TaggedItem
 
 
@@ -409,58 +410,65 @@ from tags.models import TaggedItem
 # P03-03-Sending Emails
 
 
+# def say_hello(request):
+#     # NOTE: Make sure smtp4dev is running
+#     # docker run --rm -it -p 3000:80 -p 2525:25 rnwood/smtp4dev
+
+#     # P03-03-04-Sending Emails
+
+#     # sending mail
+#     # try:
+#     #     send_mail(
+#     #         "subject",
+#     #         "message",
+#     #         "from@storefront.com",
+#     #         ["admin@storefront.com"],
+#     #     )
+#     # except BadHeaderError:
+#     #     pass
+
+#     # sending mail to admins
+#     # try:
+#     #     mail_admins(
+#     #         "subject",
+#     #         "message",
+#     #         html_message="message",
+#     #     )
+#     # except BadHeaderError:
+#     #     pass
+
+#     # P03-03-05-Attaching Emails
+
+#     # By default send_mail and mail_admins use EmailMessage class
+#     # sending mail using EmailMessage class
+#     # try:
+#     #     message = EmailMessage(
+#     #         "subject",
+#     #         "message",
+#     #         "from@storefront.com",
+#     #         ["admin1@storefront.com"],
+#     #     )
+#     #     # attaching file
+#     #     # message.attach_file("playground/static/images/placeholder.jpg")
+#     #     # send message
+#     #     message.send()
+#     # except BadHeaderError:
+#     #     pass
+
+#     # P03-03-06-Sending Templated Emails.
+#     # try:
+#     #     message = BaseEmailMessage(
+#     #         template_name="emails/hello.html", context={"name": "Kumail"}
+#     #     )
+#     #     message.send(to=["admin1@storefront.com"])
+#     # except BadHeaderError:
+#     #     pass
+
+#     return render(request, "hello.html", {"name": "Kumail"})
+
+# P03-04-Running background tasks
+
+
 def say_hello(request):
-    # NOTE: Make sure smtp4dev is running
-    # docker run --rm -it -p 3000:80 -p 2525:25 rnwood/smtp4dev
-
-    # P03-03-04-Sending Emails
-
-    # sending mail
-    # try:
-    #     send_mail(
-    #         "subject",
-    #         "message",
-    #         "from@storefront.com",
-    #         ["admin@storefront.com"],
-    #     )
-    # except BadHeaderError:
-    #     pass
-
-    # sending mail to admins
-    # try:
-    #     mail_admins(
-    #         "subject",
-    #         "message",
-    #         html_message="message",
-    #     )
-    # except BadHeaderError:
-    #     pass
-
-    # P03-03-05-Attaching Emails
-
-    # By default send_mail and mail_admins use EmailMessage class
-    # sending mail using EmailMessage class
-    # try:
-    #     message = EmailMessage(
-    #         "subject",
-    #         "message",
-    #         "from@storefront.com",
-    #         ["admin1@storefront.com"],
-    #     )
-    #     # attaching file
-    #     # message.attach_file("playground/static/images/placeholder.jpg")
-    #     # send message
-    #     message.send()
-    # except BadHeaderError:
-    #     pass
-
-    # P03-03-06-Sending Templated Emails.
-    # try:
-    #     message = BaseEmailMessage(
-    #         template_name="emails/hello.html", context={"name": "Kumail"}
-    #     )
-    #     message.send(to=["admin1@storefront.com"])
-    # except BadHeaderError:
-    #     pass
-
+    notify_customers.delay("Hello")
     return render(request, "hello.html", {"name": "Kumail"})

@@ -12,5 +12,5 @@ celery.config_from_object(
     "django.conf:settings", namespace="CELERY"
 )  # :settings is an object inside django.conf module. namespace tells all the settings will start with CELERY
 
-# automatically discover all the tasks
+# automatically discover all the tasks (inside tasks.py)
 celery.autodiscover_tasks()
