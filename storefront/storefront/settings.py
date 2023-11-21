@@ -203,3 +203,5 @@ DEFAULT_FROM_EMAIL = "from@storefront.com"
 ADMINS = [
     ("Admin One", "admin1@storefront.com"),
 ]
+
+CELERY_BROKER_URL = "redis://localhost:6379/1"  # 1 represents database

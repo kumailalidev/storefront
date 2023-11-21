@@ -410,6 +410,9 @@ from tags.models import TaggedItem
 
 
 def say_hello(request):
+    # NOTE: Make sure smtp4dev is running
+    # docker run --rm -it -p 3000:80 -p 2525:25 rnwood/smtp4dev
+
     # P03-03-04-Sending Emails
 
     # sending mail
@@ -452,12 +455,12 @@ def say_hello(request):
     #     pass
 
     # P03-03-06-Sending Templated Emails.
-    try:
-        message = BaseEmailMessage(
-            template_name="emails/hello.html", context={"name": "Kumail"}
-        )
-        message.send(to=["admin1@storefront.com"])
-    except BadHeaderError:
-        pass
+    # try:
+    #     message = BaseEmailMessage(
+    #         template_name="emails/hello.html", context={"name": "Kumail"}
+    #     )
+    #     message.send(to=["admin1@storefront.com"])
+    # except BadHeaderError:
+    #     pass
 
     return render(request, "hello.html", {"name": "Kumail"})
