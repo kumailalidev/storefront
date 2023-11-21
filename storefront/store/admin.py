@@ -18,6 +18,16 @@ class InventoryFilter(admin.SimpleListFilter):
             return queryset.filter(inventory__lt=10)
 
 
+class ProductImageInline(admin.TabularInline):
+    model = models.ProductImage
+    readonly_fields = ["thumbnail"]  # Not a part of ProductImage model
+
+    def thumbnail(self, instance):
+        if instance.image.name != "":  # referencing the image field
+            return format_html(f"<img src='{instance.image.url}' class='thumbnail' />")
+        return ""
+
+
 @admin.register(models.Product)
 class ProductAdmin(admin.ModelAdmin):
     # fields = ["title", "slug"]
@@ -35,6 +45,7 @@ class ProductAdmin(admin.ModelAdmin):
     ]  # search_field must be defined in Collection admin class
     search_fields = ["product"]
     actions = ["clear_inventory"]
+    inlines = [ProductImageInline]
     list_display = ["title", "unit_price", "inventory_status", "collection_title"]
     list_editable = ["unit_price"]
     list_filter = ["collection", "last_update", InventoryFilter]
@@ -65,6 +76,13 @@ class ProductAdmin(admin.ModelAdmin):
             f"{updated_count} products were successfully updated.",
             messages.SUCCESS,  # message type
         )
+
+    class Media:
+        css = {
+            "all": [
+                "store/styles.css"
+            ],  # all means these styles will be applied everywhere (screen etc.)
+        }
 
 
 @admin.register(models.Customer)
