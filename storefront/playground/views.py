@@ -7,6 +7,7 @@ from django.db.models.aggregates import Count, Min, Max, Avg, Sum
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction, connection
 from django.core.mail import send_mail, mail_admins, BadHeaderError, EmailMessage
+from templated_mail.mail import BaseEmailMessage
 
 from store.models import Collection, Customer, Order, OrderItem, Product
 from tags.models import TaggedItem
@@ -409,6 +410,8 @@ from tags.models import TaggedItem
 
 
 def say_hello(request):
+    # P03-03-04-Sending Emails
+
     # sending mail
     # try:
     #     send_mail(
@@ -430,19 +433,30 @@ def say_hello(request):
     # except BadHeaderError:
     #     pass
 
+    # P03-03-05-Attaching Emails
+
     # By default send_mail and mail_admins use EmailMessage class
     # sending mail using EmailMessage class
+    # try:
+    #     message = EmailMessage(
+    #         "subject",
+    #         "message",
+    #         "from@storefront.com",
+    #         ["admin1@storefront.com"],
+    #     )
+    #     # attaching file
+    #     # message.attach_file("playground/static/images/placeholder.jpg")
+    #     # send message
+    #     message.send()
+    # except BadHeaderError:
+    #     pass
+
+    # P03-03-06-Sending Templated Emails.
     try:
-        message = EmailMessage(
-            "subject",
-            "message",
-            "from@storefront.com",
-            ["admin1@storefront.com"],
+        message = BaseEmailMessage(
+            template_name="emails/hello.html", context={"name": "Kumail"}
         )
-        # attaching file
-        # message.attach_file("playground/static/images/placeholder.jpg")
-        # send message
-        message.send()
+        message.send(to=["admin1@storefront.com"])
     except BadHeaderError:
         pass
 
