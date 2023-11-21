@@ -198,3 +198,8 @@ EMAIL_HOST_USER = ""
 EMAIL_HOST_PASSWORD = ""
 EMAIL_PORT = 2525  # Default is 25
 DEFAULT_FROM_EMAIL = "from@storefront.com"
+
+# Site Admins, used by mail_admins method.
+ADMINS = [
+    ("Admin One", "admin1@storefront.com"),
+]
