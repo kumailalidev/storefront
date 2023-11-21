@@ -1,9 +1,11 @@
 from django.conf import settings
 from django.db import models
 from django.contrib import admin
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, FileExtensionValidator
 
 from uuid import uuid4
+
+from .validators import validate_file_size
 
 
 class Promotion(models.Model):
@@ -106,9 +108,18 @@ class ProductImage(models.Model):
         Product, on_delete=models.CASCADE, related_name="images"
     )
     # images are NOT stored in database, only file system path is stored in database
+    # ImageField automatically validates the file extension
     image = models.ImageField(
-        upload_to="store/images"
+        upload_to="store/images", validators=[validate_file_size]
     )  # relative to MEDIA_ROOT, therefore images are uploaded in /media/store/images/
+
+    # image = models.FileField(
+    #     upload_to="store/images",
+    #     validators=[
+    #         validate_file_size,
+    #         FileExtensionValidator(allowed_extensions=["jpg"]),
+    #     ],
+    # )  # relative to MEDIA_ROOT, therefore images are uploaded in /media/store/images/
 
 
 class Order(models.Model):
