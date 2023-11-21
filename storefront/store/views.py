@@ -41,6 +41,7 @@ from .models import (
     OrderItem,
     Product,
     Collection,
+    ProductImage,
     Review,
 )
 from .serializers import (
@@ -50,6 +51,7 @@ from .serializers import (
     CreateOrderSerializer,
     CustomerSerializer,
     OrderSerializer,
+    ProductImageSerializer,
     ProductSerializer,
     CollectionSerializer,
     ReviewSerializer,
@@ -587,3 +589,17 @@ class OrderViewSet(ModelViewSet):
         customer_id = Customer.objects.only("id").get(user_id=user.id)
 
         return Order.objects.filter(customer_id=customer_id)
+
+
+class ProductImageViewSet(ModelViewSet):
+    serializer_class = ProductImageSerializer
+
+    # pass product_pk to serializer context
+    def get_serializer_context(self):
+        return {"product_id": self.kwargs["product_pk"]}
+
+    # Only return images for a particular product
+    def get_queryset(self):
+        # product_id is fetched from nested route URL
+        # /products/1(product_pk)/images/1(pk)
+        return ProductImage.objects.filter(product_id=self.kwargs["product_pk"])
