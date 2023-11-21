@@ -14,6 +14,7 @@ from datetime import timedelta
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from celery.schedules import crontab
 
 # load environment variables from .env file
 load_dotenv()
@@ -205,3 +206,13 @@ ADMINS = [
 ]
 
 CELERY_BROKER_URL = "redis://localhost:6379/1"  # 1 represents database
+CELERY_BEAT_SCHEDULE = {
+    "notify_customer": {
+        "task": "playground.tasks.notify_customers",
+        "schedule": 5,  # every 5 seconds
+        # "schedule": crontab(day_of_week=1, hour=7, minute=30),  # Every Monday at 7:30PM
+        # "schedule": crontab(minute="*/15"), # Every 15 minutes
+        "args": ["Hello World"],
+        # "kwargs": {}
+    }
+}
