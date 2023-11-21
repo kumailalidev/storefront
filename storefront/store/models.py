@@ -101,6 +101,16 @@ class Customer(models.Model):
     #     ordering = ["first_name"]
 
 
+class ProductImage(models.Model):
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="images"
+    )
+    # images are NOT stored in database, only file system path is stored in database
+    image = models.ImageField(
+        upload_to="store/images"
+    )  # relative to MEDIA_ROOT, therefore images are uploaded in /media/store/images/
+
+
 class Order(models.Model):
     PAYMENT_STATUS_PENDING = "P"
     PAYMENT_STATUS_COMPLETED = "C"
