@@ -67,7 +67,29 @@ class CollectionSerializer(serializers.ModelSerializer):
         fields = ["id", "title"]
 
 
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ["id", "image"]
+
+    # overriding save method to pass the product_id to ProductImage object on save
+    def save(self, **kwargs):
+        # get product_id from serializer context
+        product_id = self.context["product_id"]
+
+        # create an ProductImage object
+        self.instance = ProductImage.objects.create(
+            product_id=product_id, **self.validated_data
+        )
+
+        return self.instance
+
+
 class ProductSerializer(serializers.ModelSerializer):
+    images = ProductImageSerializer(
+        many=True, read_only=True
+    )  # NOTE: field name is same as related field name
+
     class Meta:
         model = Product
         fields = [
@@ -79,6 +101,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "unit_price",
             "price_with_tax",
             "collection",  # by default models use PrimaryKeyRelatedField serializer.
+            "images",
         ]
         # fields = "__all__" # BAD PRACTICE
 
@@ -377,21 +400,3 @@ class CreateOrderSerializer(serializers.Serializer):
             order_created.send_robust(self.__class__, order=order)
 
             return order
-
-
-class ProductImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProductImage
-        fields = ["id", "image"]
-
-    # overriding save method to pass the product_id to ProductImage object on save
-    def save(self, **kwargs):
-        # get product_id from serializer context
-        product_id = self.context["product_id"]
-
-        # create an ProductImage object
-        self.instance = ProductImage.objects.create(
-            product_id=product_id, **self.validated_data
-        )
-
-        return self.instance

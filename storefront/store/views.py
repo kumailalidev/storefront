@@ -342,9 +342,9 @@ class CollectionDetail(RetrieveUpdateDestroyAPIView):
 
 # P03-03-06-ViewSets
 class ProductViewSet(ModelViewSet):
-    queryset = (
-        Product.objects.all()
-    )  # DRF uses queryset attribute to figure out the basename for router
+    queryset = Product.objects.prefetch_related(
+        "images"
+    ).all()  # DRF uses queryset attribute to figure out the basename for router
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     # fields used for filtering
