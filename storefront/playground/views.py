@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import transaction, connection
 from django.core.mail import send_mail, mail_admins, BadHeaderError, EmailMessage
 from templated_mail.mail import BaseEmailMessage
+from django.core.cache import cache  # cache obj.
 
 from store.models import Collection, Customer, Order, OrderItem, Product
 from .tasks import notify_customers
@@ -480,6 +481,13 @@ import requests
 
 
 def say_hello(request):
-    # Simulating a slow api request, response will be send after 2 seconds of delay
-    requests.get("https://httpbin.org/delay/2")
-    return render(request, "hello.html", {"name": "Mosh"})
+    key = "httpbin_result"
+    # check if cache data is available, if not add to the cache
+    if cache.get(key) is None:
+        # Simulating a slow api request, response will be send after 2 seconds of delay
+        response = requests.get("https://httpbin.org/delay/2")
+        data = response.json()
+        cache.set(
+            key, data
+        )  # can set timeout as optional argument such as 10*60 (10 minutes)
+    return render(request, "hello.html", {"name": cache.get(key)})

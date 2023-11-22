@@ -225,6 +225,7 @@ CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": "redis://127.0.0.1:6379/2",  # 1 is used for celery
+        "TIMEOUT": 10 * 60,  # 10 minutes
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
