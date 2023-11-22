@@ -1,10 +1,13 @@
 from rest_framework import status
 from rest_framework.test import APIClient
 
+import pytest
+
 # NOTE: AAA (Arrange, Act, Assert)
 
 
 class TestCreateCollection:
+    @pytest.mark.django_db  # By default database access is not allowed, Pytest can not create database objects
     def test_if_user_is_anonymous_returns_401(self):
         """
         If the user is not authenticated we should get 401 error.
