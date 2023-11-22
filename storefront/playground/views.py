@@ -13,6 +13,8 @@ from store.models import Collection, Customer, Order, OrderItem, Product
 from .tasks import notify_customers
 from tags.models import TaggedItem
 
+import requests
+
 
 # def say_hello(request):
 #     # P01-05-05-Retrieving Objects
@@ -469,6 +471,15 @@ from tags.models import TaggedItem
 # P03-04-Running background tasks
 
 
+# def say_hello(request):
+#     notify_customers.delay("Hello")
+#     return render(request, "hello.html", {"name": "Kumail"})
+
+
+# P03-07-Caching
+
+
 def say_hello(request):
-    notify_customers.delay("Hello")
-    return render(request, "hello.html", {"name": "Kumail"})
+    # Simulating a slow api request, response will be send after 2 seconds of delay
+    requests.get("https://httpbin.org/delay/2")
+    return render(request, "hello.html", {"name": "Mosh"})
