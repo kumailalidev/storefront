@@ -3,6 +3,10 @@ from rest_framework.test import APIClient
 
 from django.contrib.auth.models import User
 
+from model_bakery import baker
+
+from store.models import Collection, Product
+
 import pytest
 
 # NOTE: AAA (Arrange, Act, Assert)
@@ -89,3 +93,30 @@ class TestCreateCollection:
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["id"] > 0
         # assert response.data["title"] == "Collection Name"
+
+
+class TestRetrieveCollection:
+    @pytest.mark.django_db
+    def test_if_collection_exists_returns_200(self, api_client):
+        # Arrange
+        # creating collection using model_bakery package
+        collection = baker.make(Collection)
+
+        # product = baker.make(Product) # automatically create related object 'collection'
+        # baker.make(
+        #     Product, collection=collection, _quantity=10
+        # )  # all the 10 products belongs to same collection
+
+        # MAKE SURE TO ADD '/' at the end, otherwise test will fail
+        response = api_client.get(
+            f"/store/collections/{collection.id}/"
+        )  # DJANGO ALWAYS TERMINATES URLS WITH /, if missing in end it will automatically redirects to <url>/ with status_code 301.
+
+        assert response.status_code == status.HTTP_200_OK
+        # assert response.data["id"] == collection.id
+        # assert response.data["title"] == collection.title
+        assert response.data == {
+            "id": collection.id,
+            "title": collection.title,
+            "products_count": 0,
+        }
