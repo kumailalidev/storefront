@@ -17,3 +17,4 @@ pytest==7.4.3
 pytest-django==4.7.0
 pytest-watch==4.2.0
 model-bakery==1.17.0
+locust==2.19.0
