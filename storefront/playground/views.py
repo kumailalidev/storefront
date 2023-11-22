@@ -9,6 +9,10 @@ from django.db import transaction, connection
 from django.core.mail import send_mail, mail_admins, BadHeaderError, EmailMessage
 from templated_mail.mail import BaseEmailMessage
 from django.core.cache import cache  # cache obj.
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+
+from rest_framework.views import APIView
 
 from store.models import Collection, Customer, Order, OrderItem, Product
 from .tasks import notify_customers
@@ -480,14 +484,41 @@ import requests
 # P03-07-Caching
 
 
+# def say_hello(request):
+#     key = "httpbin_result"
+#     # check if cache data is available, if not add to the cache
+#     if cache.get(key) is None:
+#         # Simulating a slow api request, response will be send after 2 seconds of delay
+#         response = requests.get("https://httpbin.org/delay/2")
+#         data = response.json()
+#         cache.set(
+#             key, data
+#         )  # can set timeout as optional argument such as 10*60 (10 minutes)
+#     return render(request, "hello.html", {"name": cache.get(key)})
+
+
+# P03-07-09-Caching Views
+
+
+# instead of using low-level cache api, using cache decorator to cache the whole view
+# Django automatically generate cache key for say_hello view
+@cache_page(
+    5 * 60
+)  # 60 seconds timeout. NOTE: we have to wait 5min until the cache expires, change in code (such context variable) will not visible until after 5 minutes
 def say_hello(request):
-    key = "httpbin_result"
-    # check if cache data is available, if not add to the cache
-    if cache.get(key) is None:
+    # Simulating a slow api request, response will be send after 2 seconds of delay
+    response = requests.get("https://httpbin.org/delay/2")
+    data = response.json()
+    return render(request, "hello.html", {"name": data})
+
+
+# class based view
+
+
+class HelloView(APIView):
+    @method_decorator(cache_page(5 * 60))
+    def get(self, request):
         # Simulating a slow api request, response will be send after 2 seconds of delay
         response = requests.get("https://httpbin.org/delay/2")
         data = response.json()
-        cache.set(
-            key, data
-        )  # can set timeout as optional argument such as 10*60 (10 minutes)
-    return render(request, "hello.html", {"name": cache.get(key)})
+        return render(request, "hello.html", {"name": data})
