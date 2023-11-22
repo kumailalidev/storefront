@@ -1,6 +1,8 @@
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from django.contrib.auth.models import User
+
 import pytest
 
 # NOTE: AAA (Arrange, Act, Assert)
@@ -32,3 +34,34 @@ class TestCreateCollection:
         response = client.post("/store/collections/", {"title": "a"})
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_if_data_is_invalid_returns_400(self):
+        """
+        If the authenticated user provided data is invalid return HTTP status 400
+        """
+        client = APIClient()
+        client.force_authenticate(
+            user=User(is_staff=True)
+        )  # creates a new user with staff privileges
+        response = client.post("/store/collections/", {"title": ""})
+
+        # NOTE: The code still follows "Test should have single assertion/Tests should have
+        # sing responsibility" rule because both assertions stills testing the single rule.
+        # Both assertions are logically related
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data["title"] is not None  # assert if there is an error message
+
+    @pytest.mark.django_db
+    def test_if_data_is_valid_returns_201(self):
+        """
+        If the authenticated user provided data is valid return HTTP status 201
+        """
+        client = APIClient()
+        client.force_authenticate(
+            user=User(is_staff=True)
+        )  # creates a new user with staff privileges
+        response = client.post("/store/collections/", {"title": "Collection Name"})
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["id"] > 0
+        # assert response.data["title"] == "Collection Name"
