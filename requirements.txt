@@ -19,3 +19,4 @@ pytest-watch==4.2.0
 model-bakery==1.17.0
 locust==2.19.0
 django-silk==5.0.4
+django-redis==5.4.0
