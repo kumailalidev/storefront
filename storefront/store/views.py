@@ -345,6 +345,10 @@ class ProductViewSet(ModelViewSet):
     queryset = Product.objects.prefetch_related(
         "images"
     ).all()  # DRF uses queryset attribute to figure out the basename for router
+
+    # Creating a performance problem
+    # queryset = Product.objects.all()
+
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     # fields used for filtering
