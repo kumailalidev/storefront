@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "djoser",
     "django_filters",
+    "silk",
     "playground",
     "debug_toolbar",
     "store",
@@ -63,10 +64,13 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",  # inspects the incoming requests if it is coming from authenticated user it fetches the user information from database and then it attach the user information to the request object.
+    "django.contrib.auth.middleware.AuthenticationMiddleware",  # inspects the incoming requests if it is coming from authenticated user it fetches the user information from database and then it attach the user information to the request object. (adds user object to request, else AnonymousUser)
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+if DEBUG:
+    MIDDLEWARE += ["silk.middleware.SilkyMiddleware"]
 
 ROOT_URLCONF = "storefront.urls"
 
