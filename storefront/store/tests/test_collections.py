@@ -9,10 +9,10 @@ class TestCreateCollection:
         """
         If the user is not authenticated we should get 401 error.
         """
-        # Arrange
+        # Arrange (prepare for database; arrange objects or put database in initial state)
         # nothing to arrange...
 
-        # Act
+        # Act (behavior we want to test; sending request to server)
         client = APIClient()
         response = client.post("/store/collections/", {"title": "a"})
 
