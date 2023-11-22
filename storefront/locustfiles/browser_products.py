@@ -14,6 +14,7 @@ class WebsiteUser(HttpUser):
 
     @task(2)
     def view_products(self):
+        print("View Products")
         # generate a random collection id
         collection_id = randint(2, 6)
         self.client.get(
@@ -22,11 +23,13 @@ class WebsiteUser(HttpUser):
 
     @task(4)  # 4 is weight, higher number means greater chance
     def view_product(self):
+        print("View Product Details")
         product_id = randint(1, 1000)
         self.client.get(f"/store/products/{product_id}", name="/store/products/:id")
 
     @task(1)
     def add_to_cart(self):
+        print("Add to cart")
         product_id = randint(1, 10)
         self.client.post(
             f"/store/carts/{self.cart_id}/items/",
@@ -37,6 +40,6 @@ class WebsiteUser(HttpUser):
     # We need need a cart_id before user starts adding products to the cart
     # creating a lifecycle hook; it gets called whenever new user starts browsing our website
     def on_start(self):
-        response = self.client.post("/store/cart/")
+        response = self.client.post("/store/carts/")
         result = response.json()
         self.cart_id = result["id"]
