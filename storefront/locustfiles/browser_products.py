@@ -37,6 +37,10 @@ class WebsiteUser(HttpUser):
             json={"product_id": product_id, "quantity": 1},  # sending data to server
         )
 
+    @task
+    def say_hello(self):
+        self.client.get("/playground/hello/")
+
     # We need need a cart_id before user starts adding products to the cart
     # creating a lifecycle hook; it gets called whenever new user starts browsing our website
     def on_start(self):
