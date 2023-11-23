@@ -59,18 +59,18 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
-    # "debug_toolbar.middleware.DebugToolbarMiddleware",  # Debug Toolbar Setting
+    "debug_toolbar.middleware.DebugToolbarMiddleware",  # Debug Toolbar Setting
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",  # inspects the incoming requests if it is coming from authenticated user it fetches the user information from database and then it attach the user information to the request object. (adds user object to request, else AnonymousUser)
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# if DEBUG:
-#     MIDDLEWARE += ["silk.middleware.SilkyMiddleware"]
+if DEBUG:
+    MIDDLEWARE += ["silk.middleware.SilkyMiddleware"]
 
 ROOT_URLCONF = "storefront.urls"
 
@@ -156,7 +156,7 @@ STATIC_URL = "static/"
 
 # Media files (e.g. User uploaded files)
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")  # file system path
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -165,20 +165,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 REST_FRAMEWORK = {
-    # setting for NOT converting decimal field into string
     "COERCE_DECIMAL_TO_STRING": False,
-    # Global pagination for very view
-    # "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    # "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
-    # "PAGE_SIZE": 10,
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    # Global level permissions
-    # "DEFAULT_PERMISSION_CLASSES": [
-    #     # every api endpoint needs authentication
-    #     "rest_framework.permissions.IsAuthenticated",
-    # ],
 }
 
 
@@ -192,40 +182,37 @@ DJOSER = {
 }
 
 SIMPLE_JWT = {
-    "AUTH_HEADER_TYPES": ("JWT",),  # Token Prefix
+    "AUTH_HEADER_TYPES": ("JWT",),
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
 }
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"  # Default
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 EMAIL_HOST = "localhost"
 EMAIL_HOST_USER = ""
 EMAIL_HOST_PASSWORD = ""
-EMAIL_PORT = 2525  # Default is 25
+EMAIL_PORT = 2525
 DEFAULT_FROM_EMAIL = "from@storefront.com"
 
-# Site Admins, used by mail_admins method.
+
 ADMINS = [
     ("Admin One", "admin1@storefront.com"),
 ]
 
-CELERY_BROKER_URL = "redis://localhost:6379/1"  # 1 represents database
+CELERY_BROKER_URL = "redis://localhost:6379/1"
 CELERY_BEAT_SCHEDULE = {
     "notify_customer": {
         "task": "playground.tasks.notify_customers",
-        "schedule": 5,  # every 5 seconds
-        # "schedule": crontab(day_of_week=1, hour=7, minute=30),  # Every Monday at 7:30PM
-        # "schedule": crontab(minute="*/15"), # Every 15 minutes
+        "schedule": 5,
         "args": ["Hello World"],
-        # "kwargs": {}
     }
 }
 
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/2",  # 1 is used for celery
-        "TIMEOUT": 10 * 60,  # 10 minutes
+        "LOCATION": "redis://127.0.0.1:6379/2",
+        "TIMEOUT": 10 * 60,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
