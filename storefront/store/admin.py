@@ -20,29 +20,18 @@ class InventoryFilter(admin.SimpleListFilter):
 
 class ProductImageInline(admin.TabularInline):
     model = models.ProductImage
-    readonly_fields = ["thumbnail"]  # Not a part of ProductImage model
+    readonly_fields = ["thumbnail"]
 
     def thumbnail(self, instance):
-        if instance.image.name != "":  # referencing the image field
+        if instance.image.name != "":
             return format_html(f"<img src='{instance.image.url}' class='thumbnail' />")
         return ""
 
 
 @admin.register(models.Product)
 class ProductAdmin(admin.ModelAdmin):
-    # fields = ["title", "slug"]
-    # readonly_fields = ["title"]
-    # exclude = ["promotions"]
-
-    # NOTE: Fields are only prepopulated during creation of objects
-    prepopulated_fields = {
-        "slug": [
-            "title",  # can be multiple field, Django will combine them
-        ]
-    }
-    autocomplete_fields = [
-        "collection"
-    ]  # search_field must be defined in Collection admin class
+    prepopulated_fields = {"slug": ["title"]}
+    autocomplete_fields = ["collection"]
     search_fields = ["product"]
     actions = ["clear_inventory"]
     inlines = [ProductImageInline]
@@ -50,27 +39,20 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ["unit_price"]
     list_filter = ["collection", "last_update", InventoryFilter]
     list_per_page = 10
-    list_select_related = [
-        "collection"
-    ]  # eager load collection table fields for optimization.
+    list_select_related = ["collection"]
 
     def collection_title(self, product):
         return product.collection.title
 
-    # custom computed column
-    @admin.display(ordering="inventory")  # enable sorting by inventory
+    @admin.display(ordering="inventory")
     def inventory_status(self, product):
         if product.inventory < 10:
             return "Low"
         return "OK"
 
-    # custom action
     @admin.action(description="Clear inventory")
     def clear_inventory(self, request, queryset):
-        updated_count = queryset.update(
-            inventory=0
-        )  # set inventory of selected objects to 0
-        # display message on success
+        updated_count = queryset.update(inventory=0)
         self.message_user(
             request,
             f"{updated_count} products were successfully updated.",
@@ -79,31 +61,20 @@ class ProductAdmin(admin.ModelAdmin):
 
     class Media:
         css = {
-            "all": [
-                "store/styles.css"
-            ],  # all means these styles will be applied everywhere (screen etc.)
+            "all": ["store/styles.css"],
         }
 
 
 @admin.register(models.Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    # first_name and last_name refers to method names
-    list_display = [
-        "first_name",
-        "last_name",
-        "membership",
-        "orders",
-    ]  # cannot define related fields like user__first_name
+    list_display = ["first_name", "last_name", "membership", "orders"]
     list_editable = ["membership"]
-
-    # eager loading
     list_select_related = ["user"]
-
-    ordering = ["user__first_name", "user__last_name"]
     list_per_page = 10
+    ordering = ["user__first_name", "user__last_name"]
     search_fields = ["first_name__istartswith", "last_name__istartswith"]
 
-    @admin.display(ordering="orders")  # order by 'orders' field
+    @admin.display(ordering="orders")
     def orders(self, customer):
         url = (
             reverse("admin:store_order_changelist")
@@ -112,9 +83,7 @@ class CustomerAdmin(admin.ModelAdmin):
         )
         return format_html("<a href='{}'>{} Orders</a>", url, customer.orders)
 
-    # overriding the base queryset of Customer class
     def get_queryset(self, request):
-        # annotating the base queryset before returning; adds orders field to each customer object.
         return super().get_queryset(request).annotate(orders=Count("order"))
 
 
@@ -123,7 +92,7 @@ class OrderItemInline(admin.StackedInline):
     model = models.OrderItem
     min_num = 1
     max_num = 10
-    extra = 0  # only one product field is displayed
+    extra = 0
 
 
 @admin.register(models.Order)
@@ -134,9 +103,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 
 class CollectionAdmin(admin.ModelAdmin):
-    search_fields = [
-        "title"
-    ]  # required to make work autocomplete_fields in ProductAdmin class.
+    search_fields = ["title"]
     list_display = ["title", "products_count"]
 
     @admin.display(ordering="products_count")
@@ -148,15 +115,10 @@ class CollectionAdmin(admin.ModelAdmin):
         )
         return format_html("<a href='{}'>{}</a>", url, collection.products_count)
 
-    # overriding the base QuerySet of Collection class
     def get_queryset(self, request):
-        # annotating the base queryset before returning; adds product_count field to each collection object.
-        return (
-            super().get_queryset(request).annotate(products_count=Count("product"))
-        )  # Use product instead of products if related _name=product is defined in collection field of Product model.
+        return super().get_queryset(request).annotate(products_count=Count("product"))
 
 
 admin.site.register(models.Collection, CollectionAdmin)
-
 admin.site.register(models.Cart)
 admin.site.register(models.CartItem)
