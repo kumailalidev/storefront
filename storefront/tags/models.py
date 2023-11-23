@@ -24,9 +24,7 @@ class Tag(models.Model):
 class TaggedItem(models.Model):
     objects = TaggedItemManager()
 
-    tag = models.ForeignKey(
-        Tag, on_delete=models.CASCADE
-    )  # if tag is deleted, delete all the TaggedItem objects
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()  # only for +ve integer primary keys
+    object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey()
