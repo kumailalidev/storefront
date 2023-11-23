@@ -7,6 +7,6 @@ class ProductFilter(FilterSet):
     class Meta:
         model = Product
         fields = {
-            "collection_id": ["exact"],  # exact filtering using = sign
-            "unit_price": ["gt", "lt"],  # using < and > symbols
+            "collection_id": ["exact"],
+            "unit_price": ["gt", "lt"],
         }
