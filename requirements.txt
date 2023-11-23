@@ -21,3 +21,4 @@ locust==2.19.0
 django-silk==5.0.4
 django-redis==5.4.0
 whitenoise==6.6.0
+gunicorn==21.2.0

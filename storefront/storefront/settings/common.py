@@ -20,20 +20,10 @@ from celery.schedules import crontab
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-t%kks32gm%3=6uvr09%$niy2xqbuk$)!h@e6fcct)x$8@7y-hm"
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -70,8 +60,8 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-if DEBUG:
-    MIDDLEWARE += ["silk.middleware.SilkyMiddleware"]
+# if DEBUG:
+#     MIDDLEWARE += ["silk.middleware.SilkyMiddleware"]
 
 ROOT_URLCONF = "storefront.urls"
 
@@ -102,21 +92,6 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 WSGI_APPLICATION = "storefront.wsgi.application"
-
-
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": os.environ.get("MySQL_DB_NAME"),
-        "HOST": os.environ.get("MySQL_HOST"),
-        "PORT": os.environ.get("MySQL_PORT"),
-        "USER": os.environ.get("MySQL_USER"),
-        "PASSWORD": os.environ.get("MySQL_PASSWORD"),
-    }
-}
 
 
 # Password validation
