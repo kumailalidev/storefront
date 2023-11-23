@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.contrib import admin
-from django.core.validators import MinValueValidator, FileExtensionValidator
+from django.core.validators import MinValueValidator
 
 from uuid import uuid4
 
@@ -11,31 +11,34 @@ from .validators import validate_file_size
 class Promotion(models.Model):
     description = models.CharField(max_length=255)
     discount = models.FloatField()
-    # product_set (reverse relationship name)
+
+    # Related fields
+    # product_set (Model: Product)
 
 
 class Collection(models.Model):
     title = models.CharField(max_length=255)
     featured_product = models.ForeignKey(
         "Product", null=True, on_delete=models.SET_NULL, related_name="+"
-    )  # circular relationship. '+' -> do not create reverse relationship
+    )
 
-    # overriding magic __str__ method
-    def __str__(self) -> str:  # type annotation syntax
+    def __str__(self) -> str:
         return self.title
 
     class Meta:
         ordering = ["title"]
 
+    # Related fields
+    # product_set (Model: Product)
+
 
 class Product(models.Model):
-    # sku = models.CharField(max_length=10, primary_key=True)
-    title = models.CharField(max_length=255)  # varchar 255
+    title = models.CharField(max_length=255)
     slug = models.SlugField()
     description = models.TextField(blank=True, null=True)
     unit_price = models.DecimalField(
         max_digits=6, decimal_places=2, validators=[MinValueValidator(1)]
-    )  # 9999.99
+    )
     inventory = models.IntegerField(
         validators=[
             MinValueValidator(
@@ -45,8 +48,7 @@ class Product(models.Model):
     )
     last_update = models.DateTimeField(auto_now=True)
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
-    promotions = models.ManyToManyField(Promotion, blank=True)  # optional by default
-    # orderitems
+    promotions = models.ManyToManyField(Promotion, blank=True)
 
     def __str__(self) -> str:
         return self.title
@@ -54,24 +56,23 @@ class Product(models.Model):
     class Meta:
         ordering = ["title"]
 
+    # Related fields
+    #   - images (Model: ProductImage)
+    #   - orderitems (Model: OrderItem)
+    #   - cartitem_set (Model: CartItem)
+    #   - reviews (Model: Reviews)
+
 
 class Customer(models.Model):
-    # choice values
     MEMBERSHIP_BRONZE = "B"
     MEMBERSHIP_SILVER = "S"
     MEMBERSHIP_GOLD = "G"
 
-    # choices
     MEMBERSHIP_CHOICES = [
         (MEMBERSHIP_BRONZE, "Bronze"),
         (MEMBERSHIP_SILVER, "Silver"),
         (MEMBERSHIP_GOLD, "Gold"),
     ]
-
-    # These fields are no longer required because these are present in AUTH_USER_MODEL
-    # first_name = models.CharField(max_length=255)
-    # last_name = models.CharField(max_length=255)
-    # email = models.EmailField(unique=True)
 
     phone = models.CharField(max_length=255)
     birth_date = models.DateField(null=True)
@@ -79,7 +80,6 @@ class Customer(models.Model):
         max_length=1, choices=MEMBERSHIP_CHOICES, default=MEMBERSHIP_BRONZE
     )
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    # order_set (reverse relationship created by Order class, use order when using Count())
 
     def __str__(self) -> str:
         return f"{self.user.first_name} {self.user.last_name}"
@@ -98,28 +98,16 @@ class Customer(models.Model):
             ("view_history", "Can view history"),
         ]
 
-    # defined in admin.py
-    # class Meta:
-    #     ordering = ["first_name"]
+    # Related fields
+    #   - order_set (Model: Order)
+    #   - address_set (Model: Address)
 
 
 class ProductImage(models.Model):
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name="images"
     )
-    # images are NOT stored in database, only file system path is stored in database
-    # ImageField automatically validates the file extension
-    image = models.ImageField(
-        upload_to="store/images", validators=[validate_file_size]
-    )  # relative to MEDIA_ROOT, therefore images are uploaded in /media/store/images/
-
-    # image = models.FileField(
-    #     upload_to="store/images",
-    #     validators=[
-    #         validate_file_size,
-    #         FileExtensionValidator(allowed_extensions=["jpg"]),
-    #     ],
-    # )  # relative to MEDIA_ROOT, therefore images are uploaded in /media/store/images/
+    image = models.ImageField(upload_to="store/images", validators=[validate_file_size])
 
 
 class Order(models.Model):
@@ -137,25 +125,22 @@ class Order(models.Model):
     payment_status = models.CharField(
         max_length=1, choices=PAYMENT_STATUS_CHOICES, default=PAYMENT_STATUS_PENDING
     )
-    customer = models.ForeignKey(
-        Customer, on_delete=models.PROTECT
-    )  # orders should never be deleted
-    # orderitems
+    customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
 
     def __str__(self) -> str:
         return str(self.id)
 
     class Meta:
-        # creating custom permissions
         permissions = [
             ("cancel_order", "Can cancel order"),
         ]
 
+    # Related fields
+    #   - items (Model: OrderItem)
+
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(
-        Order, on_delete=models.PROTECT, related_name="items"
-    )  # orderitem_set; reverse relationship
+    order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name="items")
     product = models.ForeignKey(
         Product, on_delete=models.PROTECT, related_name="orderitems"
     )
@@ -164,27 +149,26 @@ class OrderItem(models.Model):
 
 
 class Cart(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid4)  # referencing uuid function
+    id = models.UUIDField(primary_key=True, default=uuid4)
     created_at = models.DateTimeField(auto_now_add=True)
-    # items (related field)
+
+    # Related fields
+    #   - items (Model: CartItem)
 
 
 class CartItem(models.Model):
-    cart = models.ForeignKey(
-        Cart, on_delete=models.CASCADE, related_name="items"
-    )  #  default related name is cartitems_set
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
 
     class Meta:
-        # make sure there are no duplicate records of a same product in same cart
         unique_together = [
             ["cart", "product"],
         ]
 
 
 class Address(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)  # parent field
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     street = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
 
