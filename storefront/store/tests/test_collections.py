@@ -27,6 +27,7 @@ class TestCreateCollection:
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
+    @pytest.mark.django_db
     def test_if_user_is_not_admin_returns_403(self, api_client):
         """
         If the authenticated user is not admin we should get 403 error.
@@ -36,6 +37,7 @@ class TestCreateCollection:
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
+    @pytest.mark.django_db
     def test_if_data_is_invalid_returns_400(self, api_client):
         """
         If the authenticated user provided data is invalid return HTTP status 400
