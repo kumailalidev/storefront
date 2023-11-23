@@ -1,6 +1,3 @@
-# Pytest will automatically loads fixtures or reusable functions from conftest.py
-# without explicitly importing this module.
-
 import pytest
 
 from django.contrib.auth.models import User
