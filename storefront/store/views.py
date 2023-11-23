@@ -43,6 +43,7 @@ from .serializers import (
     UpdateOrderSerializer,
 )
 
+from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 
 
@@ -71,12 +72,9 @@ class ProductViewSet(ModelViewSet):
 
 
 class CollectionViewSet(ModelViewSet):
-    queryset = Collection.objects.prefetch_related("product_set").all()
+    queryset = Collection.objects.annotate(products_count=Count("products"))
     serializer_class = CollectionSerializer
     permission_classes = [IsAdminOrReadOnly]
-
-    # OPTIONAL (visit function-based view implementation for details)
-    # queryset = Collection.objects.annotate(products_count=Count("product"))
 
     def destroy(self, request, *args, **kwargs):
         if Product.objects.filter(collection_id=kwargs["pk"]).count() > 0:

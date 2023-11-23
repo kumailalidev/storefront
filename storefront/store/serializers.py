@@ -62,17 +62,11 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class CollectionSerializer(serializers.ModelSerializer):
+    products_count = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Collection
         fields = ["id", "title", "products_count"]
-
-    products_count = serializers.SerializerMethodField(method_name="get_products_count")
-
-    # OPTIONAL: When using annotate we must define field name
-    # products_count = serializers.IntegerField(read_only=True) # field won't be available during creating or updating a collection object.
-
-    def get_products_count(self, collection: Collection):
-        return collection.product_set.count()
 
 
 class ReviewSerializer(serializers.ModelSerializer):
